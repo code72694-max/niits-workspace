@@ -1,0 +1,7 @@
+{
+  "name": "NIITS Workspace",
+  "description": "Platform workspace kolaboratif komprehensif untuk tim teknologi dengan ruang peran, tugas, chat, artikel, uji API, dan generator dokumen.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
+
