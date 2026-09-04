@@ -62,29 +62,45 @@ export const SubtractedCard: React.FC<SubtractedCardProps> = ({
   const { w, h } = dimensions;
 
   // Geometric parameters for the subtracted corner card
-  // Tuned so the 52px circular button is tangent to the top and right edges, cradled by a smooth curve
-  const R_CORNER = 32;    // Outer card corners (top-left, bottom-left, bottom-right)
-  const NOTCH_W = 92;     // Notch cutout width from right edge
-  const NOTCH_H = 64;     // Depth of the shelf from top edge (12px clearance under 52px button)
-  const R_SHOULDER = 30;  // Convex arc transitioning smoothly down from top edge
-  const R_VALLEY = 30;    // Concave inverted arc transitioning smoothly into horizontal shelf
-  const R_RIGHT = 32;     // Generous 32px rounded transition into right edge
+  // Precision engineered so the circular button is nested snugly in a concentric cradle
+  const R_CORNER = 32;          // Outer card corners (top-left, bottom-left, bottom-right)
+  const BTN_SIZE = 48;          // Circular action button diameter
+  const BTN_R = BTN_SIZE / 2;   // 24px radius
+  const GAP = 8;                // Uniform clearance gap cradling the button
+  const R_CRADLE = BTN_R + GAP; // 32px concave radius concentric to the button
+  const R_FILLET = 18;          // 18px smooth convex transition into top and right edges
 
-  // Calculate safe coordinates ensuring curves never cross even on compact widths
-  const shoulderStartX = Math.max(R_CORNER + 40, w - NOTCH_W - R_SHOULDER);
-  const shoulderEndX = Math.max(R_CORNER + 40 + R_SHOULDER, w - NOTCH_W);
-  const valleyEndX = Math.max(shoulderEndX, w - NOTCH_W + R_VALLEY);
-  const rightCornerStartX = Math.max(valleyEndX, w - R_RIGHT);
+  // Mathematical center of button tangent to top-right corner
+  const cx = w - BTN_R;
+  const cy = BTN_R;
 
-  // Generate the mathematically precise, tangent-continuous subtracted path
+  // Exact CAD fillet calculation: tangent from top edge (y=0) into the concentric cradle
+  // fillet circle center: fy = R_FILLET = 18
+  // distance between fillet center and cradle center = R_CRADLE + R_FILLET = 50
+  // vertical delta = cy - R_FILLET = 24 - 18 = 6
+  // horizontal delta = sqrt(50^2 - 6^2) = sqrt(2464) ≈ 49.64
+  const deltaH = Math.sqrt(Math.max(1, Math.pow(R_CRADLE + R_FILLET, 2) - Math.pow(cy - R_FILLET, 2)));
+  const cosA = deltaH / (R_CRADLE + R_FILLET);
+  const sinA = (cy - R_FILLET) / (R_CRADLE + R_FILLET);
+
+  // Top edge transition coordinates
+  const topFilletStartX = Math.max(R_CORNER + 20, cx - deltaH);
+  const tan1X = (cx - deltaH) + R_FILLET * cosA;
+  const tan1Y = R_FILLET + R_FILLET * sinA;
+
+  // Right edge transition coordinates (symmetric across diagonal)
+  const tan2X = cx + R_CRADLE * sinA;
+  const tan2Y = cy + R_CRADLE * cosA;
+  const rightFilletEndY = cy + deltaH;
+
+  // Generate the mathematically continuous C1 tangent subtracted path
   const pathD = `
     M ${R_CORNER} 0
-    H ${shoulderStartX}
-    A ${R_SHOULDER} ${R_SHOULDER} 0 0 1 ${shoulderEndX} ${R_SHOULDER}
-    A ${R_VALLEY} ${R_VALLEY} 0 0 0 ${valleyEndX} ${NOTCH_H}
-    H ${rightCornerStartX}
-    A ${R_RIGHT} ${R_RIGHT} 0 0 1 ${w} ${NOTCH_H + R_RIGHT}
-    V ${Math.max(NOTCH_H + R_RIGHT, h - R_CORNER)}
+    H ${topFilletStartX.toFixed(2)}
+    A ${R_FILLET} ${R_FILLET} 0 0 1 ${tan1X.toFixed(2)} ${tan1Y.toFixed(2)}
+    A ${R_CRADLE} ${R_CRADLE} 0 0 0 ${tan2X.toFixed(2)} ${tan2Y.toFixed(2)}
+    A ${R_FILLET} ${R_FILLET} 0 0 1 ${w} ${rightFilletEndY.toFixed(2)}
+    V ${Math.max(rightFilletEndY + 10, h - R_CORNER)}
     A ${R_CORNER} ${R_CORNER} 0 0 1 ${w - R_CORNER} ${h}
     H ${R_CORNER}
     A ${R_CORNER} ${R_CORNER} 0 0 1 0 ${h - R_CORNER}
@@ -118,7 +134,7 @@ export const SubtractedCard: React.FC<SubtractedCardProps> = ({
         />
       </svg>
 
-      {/* Circular Action Button Nestled in the Cutout Notch - Flush with Top Edge */}
+      {/* Circular Action Button Nestled in the Cutout Notch */}
       <button
         type="button"
         title={actionTitle}
@@ -130,9 +146,9 @@ export const SubtractedCard: React.FC<SubtractedCardProps> = ({
             onClick();
           }
         }}
-        className="absolute top-0 right-0 w-[52px] h-[52px] rounded-full bg-white border border-[#E2E8F0] shadow-sm flex items-center justify-center text-[#1E293B] hover:text-[#1E6FD9] hover:border-[#1E6FD9] hover:shadow-md hover:scale-105 active:scale-95 transition-all z-20 cursor-pointer group/btn"
+        className="absolute top-0 right-0 w-12 h-12 rounded-full bg-white border border-[#E2E8F0] shadow-xs flex items-center justify-center text-[#1E293B] hover:text-[#1E6FD9] hover:border-[#1E6FD9] hover:shadow-md hover:scale-105 active:scale-95 transition-all z-20 cursor-pointer group/btn"
       >
-        <ArrowUpRight className="w-5 h-5 text-[#1E293B] group-hover/btn:text-[#1E6FD9] group-hover/btn:translate-x-0.5 group-hover/btn:-translate-y-0.5 transition-transform" />
+        <ArrowUpRight className="w-4.5 h-4.5 text-[#1E293B] group-hover/btn:text-[#1E6FD9] group-hover/btn:translate-x-0.5 group-hover/btn:-translate-y-0.5 transition-transform" />
       </button>
 
       {/* Card Body Content */}
