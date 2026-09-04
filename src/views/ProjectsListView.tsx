@@ -1,20 +1,18 @@
-import React, { useState } from 'react';
-import { motion } from 'motion/react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { 
   FolderKanban, 
   Search, 
   Plus, 
   Lock, 
   Globe, 
-  ArrowRight, 
-  CheckCircle2, 
-  Layers, 
-  Calendar, 
-  FileText, 
-  Users,
-  Filter
+  Filter,
+  ArrowUpDown,
+  X,
+  Palette
 } from 'lucide-react';
 import { Room, Task } from '../types';
+import { ProjectFolderCard, CoverConfig } from '../components/ProjectFolderCard';
+import { ProjectCoverModal, PRESET_GRADIENTS, PRESET_PHOTOS } from '../components/ProjectCoverModal';
 
 interface ProjectsListViewProps {
   rooms: Room[];
@@ -24,6 +22,40 @@ interface ProjectsListViewProps {
   onShowToast?: (message: string, type?: 'success' | 'info' | 'error') => void;
 }
 
+// Default initial covers for rooms (Monochrome & Blue Theme)
+export const DEFAULT_COVERS: Record<string, CoverConfig> = {
+  'room-1': {
+    type: 'gradient',
+    value: PRESET_GRADIENTS[4].value, // Sky to Indigo (Tema Biru)
+    name: PRESET_GRADIENTS[4].name
+  },
+  'room-2': {
+    type: 'gradient',
+    value: PRESET_GRADIENTS[0].value, // Clean Silver (Monochrome)
+    name: PRESET_GRADIENTS[0].name
+  },
+  'room-3': {
+    type: 'gradient',
+    value: PRESET_GRADIENTS[5].value, // Deep Navy (Tema Biru)
+    name: PRESET_GRADIENTS[5].name
+  },
+  'room-4': {
+    type: 'gradient',
+    value: PRESET_GRADIENTS[1].value, // Charcoal Slate (Monochrome)
+    name: PRESET_GRADIENTS[1].name
+  },
+  'room-5': {
+    type: 'gradient',
+    value: PRESET_GRADIENTS[6].value, // Ocean Cyan (Tema Biru)
+    name: PRESET_GRADIENTS[6].name
+  },
+  'room-6': {
+    type: 'gradient',
+    value: PRESET_GRADIENTS[2].value, // Obsidian Black (Monochrome)
+    name: PRESET_GRADIENTS[2].name
+  }
+};
+
 export const ProjectsListView: React.FC<ProjectsListViewProps> = ({
   rooms,
   tasks,
@@ -32,194 +64,169 @@ export const ProjectsListView: React.FC<ProjectsListViewProps> = ({
   onShowToast
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
-  const [filterPrivacy, setFilterPrivacy] = useState<'all' | 'privat' | 'publik'>('all');
-
-  const filteredRooms = rooms.filter(room => {
-    const matchesSearch = 
-      room.nama.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      room.kode.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      room.ringkas.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesPrivacy = filterPrivacy === 'all' || room.akses === filterPrivacy;
-    return matchesSearch && matchesPrivacy;
+  const [sortBy, setSortBy] = useState<'name' | 'progress' | 'tasks'>('name');
+  
+  // Custom project covers storage
+  const [covers, setCovers] = useState<Record<string, CoverConfig>>(() => {
+    try {
+      const saved = localStorage.getItem('niits_project_covers');
+      if (saved) {
+        return { ...DEFAULT_COVERS, ...JSON.parse(saved) };
+      }
+    } catch {
+      // Fallback
+    }
+    return DEFAULT_COVERS;
   });
 
-  // Calculate high-level stats
+  // Target room for cover modal
+  const [editingRoomId, setEditingRoomId] = useState<string | null>(null);
+
+  const handleSaveCover = (roomId: string, newCover: CoverConfig) => {
+    setCovers(prev => {
+      const updated = { ...prev, [roomId]: newCover };
+      try {
+        localStorage.setItem('niits_project_covers', JSON.stringify(updated));
+      } catch {
+        // Local storage fail safe
+      }
+      return updated;
+    });
+    onShowToast?.('Cover proyek berhasil diperbarui!', 'success');
+  };
+
+  // Filter & sort rooms
+  const filteredRooms = useMemo(() => {
+    const list = rooms.filter(room => {
+      const matchesSearch = 
+        room.nama.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        room.kode.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        room.ringkas.toLowerCase().includes(searchQuery.toLowerCase());
+      return matchesSearch;
+    });
+
+    return list.sort((a, b) => {
+      if (sortBy === 'name') {
+        return a.nama.localeCompare(b.nama);
+      }
+      if (sortBy === 'progress') {
+        const pctA = a.selesai / Math.max(a.tugas, 1);
+        const pctB = b.selesai / Math.max(b.tugas, 1);
+        return pctB - pctA;
+      }
+      if (sortBy === 'tasks') {
+        return b.tugas - a.tugas;
+      }
+      return 0;
+    });
+  }, [rooms, searchQuery, sortBy]);
+
+  // Statistics
   const totalProjects = rooms.length;
   const totalTasks = tasks.length;
   const completedTasks = tasks.filter(t => t.status === 'selesai').length;
 
+  const activeEditingRoom = rooms.find(r => r.id === editingRoomId);
+
   return (
-    <div className="w-full h-full flex flex-col space-y-6 pb-8">
-      {/* Header Banner */}
-      <div className="bg-white border border-[#D5E0ED] rounded-[28px] p-6 sm:p-7 shadow-xs">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div className="flex items-center gap-3.5">
-            <div className="w-12 h-12 rounded-2xl bg-[#0B1528] text-white flex items-center justify-center shadow-xs shrink-0">
-              <FolderKanban className="w-6 h-6" />
-            </div>
-            <div>
-              <h1 className="text-xl sm:text-2xl font-black text-[#0B1528] tracking-tight">
-                Daftar Proyek & Ruang Tim
-              </h1>
-              <p className="text-xs sm:text-sm text-[#5A6E82] mt-0.5">
-                Pilih proyek untuk melihat detail lengkap, papan sprint kanban, serahan dokumen, dan anggota tim.
-              </p>
-            </div>
+    <div className="w-full h-full flex flex-col space-y-4 pb-8">
+      {/* Clean Toolbar Container: Title, Search Bar, and Sort Filter */}
+      <div className="bg-[#F4F8FA] border border-[#E2EAF3] rounded-2xl p-2.5 sm:p-3">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
+          {/* Left section: Clean title with refined typography */}
+          <div className="flex items-center w-full sm:w-auto">
+            <h1 className="text-lg sm:text-xl font-medium text-[#243347] tracking-tight whitespace-nowrap">
+              Daftar Proyek & Ruang Tim
+            </h1>
           </div>
 
-          <div className="flex items-center gap-2 shrink-0">
-            <div className="flex items-center gap-3 px-3.5 py-2 bg-[#F4F8FD] border border-[#D8E1EC] rounded-full text-xs font-semibold text-[#0B1528]">
-              <span>{totalProjects} Proyek</span>
-              <span className="w-1 h-1 rounded-full bg-[#8CA9C9]" />
-              <span>{completedTasks}/{totalTasks} Tugas Selesai</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Search & Filter Toolbar */}
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 mt-6 pt-5 border-t border-[#EEF3F8]">
-          <div className="relative w-full sm:w-80">
-            <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-[#8CA9C9]" />
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Cari nama, kode, atau deskripsi proyek..."
-              className="w-full pl-9 pr-4 py-2 text-xs bg-[#F8FAFC] border border-[#D8E1EC] rounded-full text-[#0B1528] placeholder-[#8CA9C9] focus:outline-none focus:border-[#1E6FD9] focus:bg-white transition-all"
-            />
-          </div>
-
-          <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
-            <span className="text-xs text-[#5A6E82] font-medium hidden sm:inline-flex items-center gap-1">
-              <Filter className="w-3.5 h-3.5 text-[#8CA9C9]" /> Filter:
-            </span>
-            {(['all', 'privat', 'publik'] as const).map((privacy) => (
-              <button
-                key={privacy}
-                onClick={() => setFilterPrivacy(privacy)}
-                className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all cursor-pointer ${
-                  filterPrivacy === privacy
-                    ? 'bg-[#0B1528] text-white shadow-2xs'
-                    : 'bg-white border border-[#D8E1EC] text-[#4A5D70] hover:bg-[#F4F8FD]'
-                }`}
+          {/* Right section: Search bar on the far right & sort filter right next to it */}
+          <div className="flex items-center gap-2.5 w-full sm:w-auto justify-end">
+            {/* Sort Filter Dropdown */}
+            <div className="relative flex items-center shrink-0">
+              <ArrowUpDown className="w-3.5 h-3.5 text-[#5B7288] absolute left-3 pointer-events-none" />
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value as any)}
+                aria-label="Urutkan Proyek"
+                className="pl-8 pr-7 h-9 rounded-full border border-[#E2EAF3] bg-white text-xs font-medium text-[#33465C] hover:border-[#CBD5E1] focus:outline-none focus:ring-2 focus:ring-[#1E6FD9]/20 cursor-pointer appearance-none transition-colors"
               >
-                {privacy === 'all' ? 'Semua' : privacy === 'privat' ? 'Privat' : 'Publik'}
-              </button>
-            ))}
+                <option value="name">Nama (A-Z)</option>
+                <option value="progress">Progres</option>
+                <option value="tasks">Jumlah Tugas</option>
+              </select>
+            </div>
+
+            {/* Search Bar on the Right side with increased height */}
+            <div className="relative w-full sm:w-64 md:w-72 shrink-0">
+              <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-[#94A3B8]" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Cari proyek..."
+                className="w-full pl-9 pr-8 h-9 rounded-full border border-[#E2EAF3] bg-white text-xs text-[#243347] placeholder-[#94A3B8] hover:border-[#CBD5E1] focus:outline-none focus:ring-2 focus:ring-[#1E6FD9]/20 focus:border-[#1E6FD9] transition-all"
+              />
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery('')}
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#94A3B8] hover:text-[#0F172A] cursor-pointer"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              )}
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Grid of Projects */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+      {/* 3. Grid of Projects (Responsive, Proportional, Centered/Balanced) */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-4 gap-4 sm:gap-4.5">
         {filteredRooms.map((room) => {
-          const roomTasks = tasks.filter(t => t.roomId === room.id);
-          const finishedTasks = roomTasks.filter(t => t.status === 'selesai').length;
-          const progressPct = roomTasks.length > 0 
-            ? Math.round((finishedTasks / roomTasks.length) * 100) 
-            : Math.round((room.selesai / room.tugas) * 100);
+          const roomCover = covers[room.id] || {
+            type: 'gradient',
+            value: PRESET_GRADIENTS[0].value,
+            name: PRESET_GRADIENTS[0].name
+          };
 
           return (
-            <motion.div
+            <ProjectFolderCard
               key={room.id}
-              whileHover={{ y: -3 }}
-              transition={{ duration: 0.15 }}
-              className="bg-white rounded-[24px] border border-[#D5E0ED] p-5 sm:p-6 shadow-xs hover:shadow-md hover:border-[#1E6FD9]/40 transition-all flex flex-col justify-between group"
-            >
-              <div>
-                {/* Top badges: Code & Privacy */}
-                <div className="flex items-center justify-between mb-3.5">
-                  <span 
-                    className="font-mono font-bold px-2.5 py-1 rounded-lg text-xs text-white shadow-2xs"
-                    style={{ backgroundColor: room.warna || '#1E6FD9' }}
-                  >
-                    {room.kode}
-                  </span>
-                  <span className="text-[11px] font-semibold text-[#5A6E82] flex items-center gap-1.5 bg-[#F4F8FD] px-2.5 py-1 rounded-full border border-[#D8E1EC]">
-                    {room.akses === 'privat' ? (
-                      <Lock className="w-3 h-3 text-[#E38977]" />
-                    ) : (
-                      <Globe className="w-3 h-3 text-[#1E6FD9]" />
-                    )}
-                    {room.akses.toUpperCase()}
-                  </span>
-                </div>
-
-                {/* Project Title & Summary */}
-                <h3 className="text-base font-bold text-[#0B1528] group-hover:text-[#1E6FD9] transition-colors line-clamp-1">
-                  {room.nama}
-                </h3>
-                <p className="text-xs text-[#5A6E82] mt-1.5 leading-relaxed line-clamp-2 min-h-[36px]">
-                  {room.ringkas}
-                </p>
-
-                {/* Progress Bar */}
-                <div className="mt-4 pt-3 border-t border-[#EEF3F8] space-y-1.5">
-                  <div className="flex items-center justify-between text-[11px] font-semibold text-[#5A6E82]">
-                    <span>Progres Kasus & Fitur</span>
-                    <span className="font-mono font-bold text-[#0B1528]">{progressPct}%</span>
-                  </div>
-                  <div className="w-full h-1.5 bg-[#EEF3F8] rounded-full overflow-hidden">
-                    <div 
-                      className="h-full rounded-full transition-all duration-300"
-                      style={{ 
-                        width: `${progressPct}%`, 
-                        backgroundColor: room.warna || '#1E6FD9' 
-                      }}
-                    />
-                  </div>
-                  <div className="flex items-center justify-between text-[10px] text-[#8CA9C9] pt-0.5">
-                    <span>{finishedTasks} dari {roomTasks.length || room.tugas} selesai</span>
-                    <span>Sprint Aktif</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Action Buttons: Open Project Detail & Shortcuts */}
-              <div className="mt-5 pt-3.5 border-t border-[#EEF3F8] flex items-center justify-between gap-2">
-                <div className="flex items-center gap-1">
-                  <button
-                    onClick={() => onSelectProject(room.id, 'board')}
-                    className="p-1.5 rounded-lg bg-[#F4F8FD] hover:bg-[#E8EEF5] text-[#4A5D70] hover:text-[#0B1528] transition-colors cursor-pointer"
-                    title="Buka Papan Kanban"
-                  >
-                    <Layers className="w-3.5 h-3.5" />
-                  </button>
-                  <button
-                    onClick={() => onSelectProject(room.id, 'calendar')}
-                    className="p-1.5 rounded-lg bg-[#F4F8FD] hover:bg-[#E8EEF5] text-[#4A5D70] hover:text-[#0B1528] transition-colors cursor-pointer"
-                    title="Buka Kalender Sprint"
-                  >
-                    <Calendar className="w-3.5 h-3.5" />
-                  </button>
-                  <button
-                    onClick={() => onSelectProject(room.id, 'docs')}
-                    className="p-1.5 rounded-lg bg-[#F4F8FD] hover:bg-[#E8EEF5] text-[#4A5D70] hover:text-[#0B1528] transition-colors cursor-pointer"
-                    title="Buka Dokumen Proyek"
-                  >
-                    <FileText className="w-3.5 h-3.5" />
-                  </button>
-                </div>
-
-                <button
-                  onClick={() => onSelectProject(room.id, 'dashboard')}
-                  className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-[#0B1528] hover:bg-[#1E6FD9] text-white text-xs font-bold transition-all shadow-2xs active:scale-95 cursor-pointer"
-                >
-                  <span>Detail Proyek</span>
-                  <ArrowRight className="w-3.5 h-3.5" />
-                </button>
-              </div>
-            </motion.div>
+              room={room}
+              tasks={tasks}
+              cover={roomCover}
+              onSelectProject={(id, tab) => onSelectProject(id, tab)}
+              onChangeCover={(id) => setEditingRoomId(id)}
+            />
           );
         })}
       </div>
 
+      {/* Empty Search State */}
       {filteredRooms.length === 0 && (
-        <div className="bg-white rounded-[24px] border border-[#D5E0ED] p-12 text-center">
+        <div className="bg-white rounded-2xl border border-[#E2EAF3] p-12 text-center">
           <FolderKanban className="w-10 h-10 text-[#8CA9C9] mx-auto mb-3" />
           <h3 className="text-base font-bold text-[#0B1528]">Tidak ada proyek yang sesuai</h3>
-          <p className="text-xs text-[#5A6E82] mt-1">Coba kata kunci pencarian yang lain atau ubah filter privasi.</p>
+          <p className="text-xs text-[#5A6E82] mt-1">
+            Coba kata kunci pencarian yang lain untuk menemukan proyek tim.
+          </p>
         </div>
+      )}
+
+      {/* 4. Cover Picker Modal for Customizing the Photo/Gradient */}
+      {editingRoomId && activeEditingRoom && (
+        <ProjectCoverModal
+          room={activeEditingRoom}
+          currentCover={
+            covers[editingRoomId] || {
+              type: 'gradient',
+              value: PRESET_GRADIENTS[0].value,
+              name: PRESET_GRADIENTS[0].name
+            }
+          }
+          onSave={(newCover) => handleSaveCover(editingRoomId, newCover)}
+          onClose={() => setEditingRoomId(null)}
+        />
       )}
     </div>
   );

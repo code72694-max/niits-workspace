@@ -58,6 +58,9 @@ interface SidebarProps {
   hasNextArticle?: boolean;
   prevArticleTitle?: string;
   nextArticleTitle?: string;
+  // Project Detail Mode Navigation Props:
+  isProjectDetail?: boolean;
+  onBackFromProjectDetail?: () => void;
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
@@ -79,7 +82,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
   hasPrevArticle = false,
   hasNextArticle = false,
   prevArticleTitle,
-  nextArticleTitle
+  nextArticleTitle,
+  isProjectDetail = false,
+  onBackFromProjectDetail
 }) => {
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
@@ -291,9 +296,20 @@ export const Sidebar: React.FC<SidebarProps> = ({
       <aside 
         className="hidden md:flex flex-col items-center justify-between pt-0 pb-1 shrink-0 z-[60] relative select-none h-full w-10"
       >
-        {/* TOP: Bruno PMO Brand Icon or Article Back Button */}
+        {/* TOP: Bruno PMO Brand Icon, Article Back Button, or Project Detail Back Button */}
         <div className="w-full flex flex-col items-center pt-[14px]">
-          {isArticleDetail ? (
+          {isProjectDetail ? (
+            <button
+              onClick={onBackFromProjectDetail}
+              className="relative group w-10 h-10 rounded-full flex items-center justify-center bg-white border border-[#D5E0ED] text-[#0B1528] shadow-2xs hover:shadow-xs hover:border-[#0B1528] hover:bg-[#F8FAFC] transition-all active:scale-95 cursor-pointer"
+              title="Kembali ke Daftar Proyek"
+            >
+              <ArrowLeft className="w-4.5 h-4.5 text-[#0B1528] group-hover:-translate-x-0.5 transition-transform" />
+              <span className="absolute left-13 px-2.5 py-1 rounded-lg bg-[#0A2540] text-white text-[11px] font-medium whitespace-nowrap shadow-lg opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity z-50">
+                Kembali ke Daftar Proyek
+              </span>
+            </button>
+          ) : isArticleDetail ? (
             <button
               onClick={onBackFromArticleDetail}
               className="relative group w-10 h-10 rounded-full flex items-center justify-center bg-white border border-[#D5E0ED] text-[#0B1528] shadow-2xs hover:shadow-xs hover:border-[#0B1528] hover:bg-[#F8FAFC] transition-all active:scale-95 cursor-pointer"
@@ -318,8 +334,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
           )}
         </div>
 
-        {/* CENTER: All Menus Vertically Centered (Hidden during Article Detail view) */}
-        {!isArticleDetail && (
+        {/* CENTER: All Menus Vertically Centered (Hidden during Article Detail or Project Detail view) */}
+        {!isArticleDetail && !isProjectDetail && (
           <div className="w-full flex-1 flex flex-col items-center justify-center gap-2 my-auto">
             {/* 1. Primary Menus (Dashboard, Articles, Team) moved from Header */}
             <div className="w-full flex flex-col items-center gap-2">
@@ -387,74 +403,76 @@ export const Sidebar: React.FC<SidebarProps> = ({
           </div>
         )}
 
-        {/* BOTTOM: Chat & Saluran Tim or Prev/Next Article Navigation Arrows */}
-        <div className="w-full flex flex-col items-center pt-2">
-          {isArticleDetail ? (
-            <div className="flex flex-col items-center gap-2">
-              {/* Back / Previous Article Arrow */}
+        {/* BOTTOM: Chat & Saluran Tim or Prev/Next Article Navigation Arrows (Hidden during Project Detail) */}
+        {!isProjectDetail && (
+          <div className="w-full flex flex-col items-center pt-2">
+            {isArticleDetail ? (
+              <div className="flex flex-col items-center gap-2">
+                {/* Back / Previous Article Arrow */}
+                <button
+                  onClick={onPrevArticle}
+                  disabled={!hasPrevArticle}
+                  className={`relative group w-10 h-10 rounded-full flex items-center justify-center transition-all shadow-2xs active:scale-95 ${
+                    hasPrevArticle
+                      ? 'bg-white border border-[#D5E0ED] text-[#0B1528] hover:border-[#0B1528] hover:bg-[#F8FAFC] cursor-pointer'
+                      : 'bg-slate-100 border border-slate-200 text-slate-300 cursor-not-allowed opacity-50'
+                  }`}
+                  title={hasPrevArticle ? `Artikel Sebelumnya: ${prevArticleTitle || ''}` : 'Artikel Pertama'}
+                >
+                  <ChevronLeft className="w-4.5 h-4.5 shrink-0" />
+                  <span className="absolute left-13 px-2.5 py-1 rounded-lg bg-[#0A2540] text-white text-[11px] font-medium whitespace-nowrap shadow-lg opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity z-50">
+                    {hasPrevArticle ? `Sebelumnya: ${prevArticleTitle}` : 'Artikel Pertama'}
+                  </span>
+                </button>
+
+                {/* Next Article Arrow */}
+                <button
+                  onClick={onNextArticle}
+                  disabled={!hasNextArticle}
+                  className={`relative group w-10 h-10 rounded-full flex items-center justify-center transition-all shadow-2xs active:scale-95 ${
+                    hasNextArticle
+                      ? 'bg-white border border-[#D5E0ED] text-[#0B1528] hover:border-[#0B1528] hover:bg-[#F8FAFC] cursor-pointer'
+                      : 'bg-slate-100 border border-slate-200 text-slate-300 cursor-not-allowed opacity-50'
+                  }`}
+                  title={hasNextArticle ? `Artikel Berikutnya: ${nextArticleTitle || ''}` : 'Artikel Terakhir'}
+                >
+                  <ChevronRight className="w-4.5 h-4.5 shrink-0" />
+                  <span className="absolute left-13 px-2.5 py-1 rounded-lg bg-[#0A2540] text-white text-[11px] font-medium whitespace-nowrap shadow-lg opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity z-50">
+                    {hasNextArticle ? `Berikutnya: ${nextArticleTitle}` : 'Artikel Terakhir'}
+                  </span>
+                </button>
+              </div>
+            ) : (
               <button
-                onClick={onPrevArticle}
-                disabled={!hasPrevArticle}
-                className={`relative group w-10 h-10 rounded-full flex items-center justify-center transition-all shadow-2xs active:scale-95 ${
-                  hasPrevArticle
-                    ? 'bg-white border border-[#D5E0ED] text-[#0B1528] hover:border-[#0B1528] hover:bg-[#F8FAFC] cursor-pointer'
-                    : 'bg-slate-100 border border-slate-200 text-slate-300 cursor-not-allowed opacity-50'
+                onClick={(e) => handleItemClick('chat', e, true, () => handleNavigate('chat'))}
+                onMouseEnter={(e) => handleMouseEnterItem('chat', e)}
+                onMouseLeave={handleMouseLeaveItem}
+                className={`relative group w-10 h-10 rounded-full flex items-center justify-center transition-all cursor-pointer shadow-2xs hover:shadow-xs active:scale-95 ${
+                  currentPage === 'chat' || activeFlyout === 'chat'
+                    ? 'bg-[#00A884] text-white shadow-sm ring-2 ring-[#00A884]/40 font-semibold'
+                    : 'bg-white border border-[#D5E0ED] text-[#4A5D70] hover:text-[#00A884] hover:border-[#00A884]/60 hover:bg-white'
                 }`}
-                title={hasPrevArticle ? `Artikel Sebelumnya: ${prevArticleTitle || ''}` : 'Artikel Pertama'}
+                title="Chat & Saluran Tim"
               >
-                <ChevronLeft className="w-4.5 h-4.5 shrink-0" />
-                <span className="absolute left-13 px-2.5 py-1 rounded-lg bg-[#0A2540] text-white text-[11px] font-medium whitespace-nowrap shadow-lg opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity z-50">
-                  {hasPrevArticle ? `Sebelumnya: ${prevArticleTitle}` : 'Artikel Pertama'}
-                </span>
+                <Send className="w-4.5 h-4.5 shrink-0" />
+
+                {/* Badge for unread chats */}
+                {unreadChatCount > 0 && (
+                  <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-[16px] px-1 rounded-full bg-[#C4562B] text-white text-[8px] font-bold flex items-center justify-center ring-2 ring-white shadow-2xs">
+                    {unreadChatCount}
+                  </span>
+                )}
+
+                {/* Hover Tooltip when NO flyout is open */}
+                {activeFlyout !== 'chat' && (
+                  <span className="absolute left-13 px-2.5 py-1 rounded-lg bg-[#0A2540] text-white text-[11px] font-medium whitespace-nowrap shadow-lg opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity z-50">
+                    Chat & Saluran Tim
+                  </span>
+                )}
               </button>
-
-              {/* Next Article Arrow */}
-              <button
-                onClick={onNextArticle}
-                disabled={!hasNextArticle}
-                className={`relative group w-10 h-10 rounded-full flex items-center justify-center transition-all shadow-2xs active:scale-95 ${
-                  hasNextArticle
-                    ? 'bg-white border border-[#D5E0ED] text-[#0B1528] hover:border-[#0B1528] hover:bg-[#F8FAFC] cursor-pointer'
-                    : 'bg-slate-100 border border-slate-200 text-slate-300 cursor-not-allowed opacity-50'
-                }`}
-                title={hasNextArticle ? `Artikel Berikutnya: ${nextArticleTitle || ''}` : 'Artikel Terakhir'}
-              >
-                <ChevronRight className="w-4.5 h-4.5 shrink-0" />
-                <span className="absolute left-13 px-2.5 py-1 rounded-lg bg-[#0A2540] text-white text-[11px] font-medium whitespace-nowrap shadow-lg opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity z-50">
-                  {hasNextArticle ? `Berikutnya: ${nextArticleTitle}` : 'Artikel Terakhir'}
-                </span>
-              </button>
-            </div>
-          ) : (
-            <button
-              onClick={(e) => handleItemClick('chat', e, true, () => handleNavigate('chat'))}
-              onMouseEnter={(e) => handleMouseEnterItem('chat', e)}
-              onMouseLeave={handleMouseLeaveItem}
-              className={`relative group w-10 h-10 rounded-full flex items-center justify-center transition-all cursor-pointer shadow-2xs hover:shadow-xs active:scale-95 ${
-                currentPage === 'chat' || activeFlyout === 'chat'
-                  ? 'bg-[#00A884] text-white shadow-sm ring-2 ring-[#00A884]/40 font-semibold'
-                  : 'bg-white border border-[#D5E0ED] text-[#4A5D70] hover:text-[#00A884] hover:border-[#00A884]/60 hover:bg-white'
-              }`}
-              title="Chat & Saluran Tim"
-            >
-              <Send className="w-4.5 h-4.5 shrink-0" />
-
-              {/* Badge for unread chats */}
-              {unreadChatCount > 0 && (
-                <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-[16px] px-1 rounded-full bg-[#C4562B] text-white text-[8px] font-bold flex items-center justify-center ring-2 ring-white shadow-2xs">
-                  {unreadChatCount}
-                </span>
-              )}
-
-              {/* Hover Tooltip when NO flyout is open */}
-              {activeFlyout !== 'chat' && (
-                <span className="absolute left-13 px-2.5 py-1 rounded-lg bg-[#0A2540] text-white text-[11px] font-medium whitespace-nowrap shadow-lg opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity z-50">
-                  Chat & Saluran Tim
-                </span>
-              )}
-            </button>
-          )}
-        </div>
+            )}
+          </div>
+        )}
       </aside>
 
       {/* ========================================================================= */}
@@ -955,7 +973,18 @@ export const Sidebar: React.FC<SidebarProps> = ({
             >
               <div className="space-y-4">
                 <div className="flex items-center justify-between pb-3 border-b border-[#D8E1EC]">
-                  {isArticleDetail ? (
+                  {isProjectDetail ? (
+                    <button
+                      onClick={() => {
+                        onBackFromProjectDetail?.();
+                        onCloseMobile?.();
+                      }}
+                      className="flex items-center gap-2 px-2 py-1 -ml-1 text-[#0A2540] font-semibold text-xs hover:bg-white rounded-lg transition-colors cursor-pointer"
+                    >
+                      <ArrowLeft className="w-4 h-4 text-[#0A2540]" />
+                      <span>Kembali ke Proyek</span>
+                    </button>
+                  ) : isArticleDetail ? (
                     <button
                       onClick={() => {
                         onBackFromArticleDetail?.();

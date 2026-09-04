@@ -5,7 +5,8 @@ import {
   AlertCircle, 
   Info, 
   X,
-  Menu
+  Menu,
+  ArrowLeft
 } from 'lucide-react';
 
 import { Task, RoleKey, Room, NotificationItem } from './types';
@@ -74,6 +75,11 @@ export default function App() {
   const [articleSubView, setArticleSubView] = useState<'daftar' | 'detail' | 'tulis' | 'ekspor'>('daftar');
 
   const isArticleDetail = (currentPage === 'articles' || currentPage === 'artikel') && articleSubView === 'detail';
+  const isProjectDetail = currentPage === 'project' || currentPage === 'board' || currentPage === 'room';
+
+  const handleBackFromProjectDetail = () => {
+    handleNavigate('projects');
+  };
 
   const currentArticleIndex = INITIAL_ARTICLES.findIndex(a => a.id === selectedArticleId);
   const safeArticleIndex = currentArticleIndex >= 0 ? currentArticleIndex : 0;
@@ -410,19 +416,41 @@ export default function App() {
       {/* Mobile-only Top Bar (< md screens): Compact bar for menu drawer toggle & quick tabs */}
       <div className="md:hidden flex items-center justify-between px-3 py-2.5 bg-white/95 backdrop-blur-md border-b border-[#D5E0ED] shrink-0 z-30 shadow-2xs">
         <div className="flex items-center gap-2">
-          <button
-            onClick={() => setIsMobileSidebarOpen(true)}
-            className="p-1.5 rounded-xl bg-[#F4F8FD] text-[#0A2540] border border-[#D5E0ED] active:scale-95 cursor-pointer hover:bg-[#EAEFF5]"
-            title="Buka Menu Navigasi"
-          >
-            <Menu className="w-5 h-5" />
-          </button>
-          <div className="flex items-center gap-1.5 cursor-pointer" onClick={() => handleNavigate('dash')}>
-            <div className="w-6 h-6 rounded-md bg-[#0B1528] text-white font-extrabold flex items-center justify-center text-xs shadow-xs">
-              B
-            </div>
-            <span className="font-extrabold text-sm text-[#0A2540]">Bruno</span>
-          </div>
+          {isProjectDetail ? (
+            <button
+              onClick={handleBackFromProjectDetail}
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-[#F4F8FD] text-[#0A2540] border border-[#D5E0ED] active:scale-95 cursor-pointer hover:bg-[#EAEFF5] text-xs font-semibold"
+              title="Kembali ke Daftar Proyek"
+            >
+              <ArrowLeft className="w-4 h-4 text-[#0A2540]" />
+              <span>Kembali</span>
+            </button>
+          ) : isArticleDetail ? (
+            <button
+              onClick={handleBackFromArticleDetail}
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-[#F4F8FD] text-[#0A2540] border border-[#D5E0ED] active:scale-95 cursor-pointer hover:bg-[#EAEFF5] text-xs font-semibold"
+              title="Kembali ke Daftar Artikel"
+            >
+              <ArrowLeft className="w-4 h-4 text-[#0A2540]" />
+              <span>Kembali</span>
+            </button>
+          ) : (
+            <>
+              <button
+                onClick={() => setIsMobileSidebarOpen(true)}
+                className="p-1.5 rounded-xl bg-[#F4F8FD] text-[#0A2540] border border-[#D5E0ED] active:scale-95 cursor-pointer hover:bg-[#EAEFF5]"
+                title="Buka Menu Navigasi"
+              >
+                <Menu className="w-5 h-5" />
+              </button>
+              <div className="flex items-center gap-1.5 cursor-pointer" onClick={() => handleNavigate('dash')}>
+                <div className="w-6 h-6 rounded-md bg-[#0B1528] text-white font-extrabold flex items-center justify-center text-xs shadow-xs">
+                  B
+                </div>
+                <span className="font-extrabold text-sm text-[#0A2540]">Bruno</span>
+              </div>
+            </>
+          )}
         </div>
 
         {/* Mobile Quick Pills: Dashboard, Articles, Team */}
@@ -475,6 +503,8 @@ export default function App() {
             hasNextArticle={hasNextArticle}
             prevArticleTitle={prevArticleTitle}
             nextArticleTitle={nextArticleTitle}
+            isProjectDetail={isProjectDetail}
+            onBackFromProjectDetail={handleBackFromProjectDetail}
           />
 
           {/* Main Workspace Layout */}

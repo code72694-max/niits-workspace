@@ -25,7 +25,8 @@ import {
   Zap,
   Tag,
   Star,
-  MoreHorizontal
+  MoreHorizontal,
+  Palette
 } from 'lucide-react';
 import { Room, Task, RoleKey, TaskStatus } from '../types';
 import { ROLES_CONFIG, USERS_MAP, ROOMS_MAP } from '../data/mockData';
@@ -33,6 +34,9 @@ import { BoardView } from './BoardView';
 import { CalendarView } from './CalendarView';
 import { ProjectDocsView } from './ProjectDocsView';
 import { ListView } from './ListView';
+import { ProjectCoverModal, PRESET_GRADIENTS } from '../components/ProjectCoverModal';
+import { CoverConfig } from '../components/ProjectFolderCard';
+import { DEFAULT_COVERS } from './ProjectsListView';
 
 export type ProjectSubTab = 'dashboard' | 'board' | 'calendar' | 'docs' | 'list';
 
@@ -65,6 +69,33 @@ export const ProjectWorkspaceView: React.FC<ProjectWorkspaceViewProps> = ({
 }) => {
   const [activeTab, setActiveTab] = useState<ProjectSubTab>(initialTab);
   const [isRoomDropdownOpen, setIsRoomDropdownOpen] = useState(false);
+
+  // Cover state for project detail page
+  const [isCoverModalOpen, setIsCoverModalOpen] = useState(false);
+  const [covers, setCovers] = useState<Record<string, CoverConfig>>(() => {
+    try {
+      const saved = localStorage.getItem('niits_project_covers');
+      if (saved) {
+        return { ...DEFAULT_COVERS, ...JSON.parse(saved) };
+      }
+    } catch {
+      // Fallback
+    }
+    return DEFAULT_COVERS;
+  });
+
+  const handleSaveCover = (newCover: CoverConfig) => {
+    setCovers(prev => {
+      const updated = { ...prev, [currentRoomId]: newCover };
+      try {
+        localStorage.setItem('niits_project_covers', JSON.stringify(updated));
+      } catch {
+        // Fallback
+      }
+      return updated;
+    });
+    onShowToast?.('Cover proyek berhasil diperbarui!', 'success');
+  };
 
   React.useEffect(() => {
     if (initialTab) {
@@ -245,6 +276,15 @@ export const ProjectWorkspaceView: React.FC<ProjectWorkspaceViewProps> = ({
                 </span>
               </div>
             </div>
+
+            <button
+              onClick={() => setIsCoverModalOpen(true)}
+              className="flex items-center gap-1.5 px-3.5 py-2.5 rounded-2xl bg-white border border-[#D8E1EC] hover:bg-[#F4F8FD] text-[#0A2540] text-xs font-semibold shadow-xs transition-all active:scale-95 cursor-pointer"
+              title="Ganti Cover Gambar atau Gradasi Proyek"
+            >
+              <Palette className="w-3.5 h-3.5 text-[#D97706]" />
+              <span>Ganti Cover</span>
+            </button>
 
             <button
               onClick={onOpenNewTask}
@@ -651,6 +691,16 @@ export const ProjectWorkspaceView: React.FC<ProjectWorkspaceViewProps> = ({
             onOpenNewTask={onOpenNewTask}
           />
         </motion.div>
+      )}
+
+      {/* Project Cover Modal */}
+      {isCoverModalOpen && (
+        <ProjectCoverModal
+          room={currentRoom}
+          currentCover={covers[currentRoomId] || DEFAULT_COVERS[currentRoomId] || { type: 'gradient', value: PRESET_GRADIENTS[0].value, name: PRESET_GRADIENTS[0].name }}
+          onSave={handleSaveCover}
+          onClose={() => setIsCoverModalOpen(false)}
+        />
       )}
 
     </div>

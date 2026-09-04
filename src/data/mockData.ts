@@ -195,12 +195,13 @@ export const INITIAL_TASKS: Task[] = [
     komentar: 7,
     lampiran: 2,
     estimasi: "8j",
+    storyPoints: 5,
     deskripsi: "Dua pembeli bisa lolos checkout untuk item stok terakhir. Butuh pessimistic lock atau constraint di level DB, bukan cek di service."
   },
   {
     id: "T-238",
     listId: "l1",
-    roomId: "r1",
+    roomId: "r2",
     peran: "sec",
     next: "qa",
     nama: "Rate limit endpoint /auth/login (5 req/menit per IP)",
@@ -218,12 +219,13 @@ export const INITIAL_TASKS: Task[] = [
     komentar: 4,
     lampiran: 0,
     estimasi: "3j",
+    storyPoints: 2,
     deskripsi: "Brute force masih mungkin. Pakai Redis sliding window, balas 429 + Retry-After."
   },
   {
     id: "T-236",
     listId: "l1",
-    roomId: "r1",
+    roomId: "r2",
     peran: "sec",
     next: "be",
     nama: "Audit IDOR di endpoint /orders/:id",
@@ -242,6 +244,7 @@ export const INITIAL_TASKS: Task[] = [
     komentar: 12,
     lampiran: 3,
     estimasi: "6j",
+    storyPoints: 3,
     deskripsi: "Order milik user lain bisa dibaca kalau id-nya ditebak. Guard belum cek kepemilikan."
   },
   {
@@ -260,6 +263,7 @@ export const INITIAL_TASKS: Task[] = [
     komentar: 9,
     lampiran: 5,
     estimasi: "12j",
+    storyPoints: 8,
     deskripsi: "Hierarki harga & tombol beli belum jelas di layar kecil. CTA harus sticky 8px di atas tab bar."
   },
   {
@@ -278,6 +282,7 @@ export const INITIAL_TASKS: Task[] = [
     komentar: 3,
     lampiran: 1,
     estimasi: "9j",
+    storyPoints: 5,
     deskripsi: "Kartu masih pakai warna hardcode. Pindah ke token dan rapikan state hover/fokus."
   },
   {
@@ -296,6 +301,7 @@ export const INITIAL_TASKS: Task[] = [
     komentar: 2,
     lampiran: 0,
     estimasi: "5j",
+    storyPoints: 3,
     deskripsi: "Offset 10.000+ bikin query 4 detik. Ganti ke keyset pagination."
   },
   {
@@ -314,6 +320,7 @@ export const INITIAL_TASKS: Task[] = [
     komentar: 1,
     lampiran: 0,
     estimasi: "10j",
+    storyPoints: 5,
     deskripsi: "Push lewat WebSocket, simpan ke tabel notifications untuk yang offline."
   },
   {
@@ -332,12 +339,13 @@ export const INITIAL_TASKS: Task[] = [
     komentar: 6,
     lampiran: 2,
     estimasi: "6j",
+    storyPoints: 3,
     deskripsi: "Alur permintaan, persetujuan, penerimaan barang, plus siapa yang boleh menyetujui."
   },
   {
     id: "T-227",
     listId: "l1",
-    roomId: "r1",
+    roomId: "r2",
     peran: "qa",
     next: "be",
     nama: "Tulis 24 kasus uji negatif alur checkout",
@@ -350,12 +358,13 @@ export const INITIAL_TASKS: Task[] = [
     komentar: 5,
     lampiran: 1,
     estimasi: "7j",
+    storyPoints: 5,
     deskripsi: "Tiap kasus negatif wajib punya ekspektasi kode status HTTP, bukan cuma gagal."
   },
   {
     id: "T-226",
     listId: "l1",
-    roomId: "r1",
+    roomId: "r4",
     peran: "devops",
     next: "be",
     nama: "Pipeline: lint -> test -> build -> scan -> deploy staging",
@@ -368,12 +377,13 @@ export const INITIAL_TASKS: Task[] = [
     komentar: 4,
     lampiran: 0,
     estimasi: "8j",
+    storyPoints: 5,
     deskripsi: "Jangan telan kegagalan pakai || true. Secret ambil dari secret manager."
   },
   {
     id: "T-225",
     listId: "l1",
-    roomId: "r1",
+    roomId: "r4",
     peran: "be",
     next: "qa",
     nama: "Perbaiki N+1 di endpoint board (task + assignee + tag)",
@@ -386,12 +396,13 @@ export const INITIAL_TASKS: Task[] = [
     komentar: 0,
     lampiran: 1,
     estimasi: "4j",
+    storyPoints: 2,
     deskripsi: "412 query untuk 1 board. Batasi dengan dataloader / join eksplisit."
   },
   {
     id: "T-224",
     listId: "l1",
-    roomId: "r1",
+    roomId: "r3",
     peran: "ux",
     next: "fe",
     nama: "Audit kontras & state fokus di seluruh form",
@@ -404,12 +415,13 @@ export const INITIAL_TASKS: Task[] = [
     komentar: 2,
     lampiran: 0,
     estimasi: "5j",
+    storyPoints: 3,
     deskripsi: "Beberapa label 11px di atas biru muda gagal WCAG AA."
   },
   {
     id: "T-222",
     listId: "l1",
-    roomId: "r1",
+    roomId: "r4",
     peran: "devops",
     next: "qa",
     nama: "Health check + restart policy untuk semua container",
@@ -422,15 +434,16 @@ export const INITIAL_TASKS: Task[] = [
     komentar: 2,
     lampiran: 1,
     estimasi: "2j",
+    storyPoints: 1,
     deskripsi: "Selesai, sudah jalan di staging."
   },
   {
     id: "T-221",
     listId: "l1",
-    roomId: "r1",
+    roomId: "r5",
     peran: "ba",
     next: "ux",
-    nama: "SOP pengadaan stok gudang (dokumen)",
+    nama: "SOP pengadaan stok & manifest kurir lapangan",
     status: "backlog",
     prioritas: "low",
     assignee: ["u6"],
@@ -440,7 +453,65 @@ export const INITIAL_TASKS: Task[] = [
     komentar: 3,
     lampiran: 0,
     estimasi: "2j",
+    storyPoints: 1,
     deskripsi: "Alur permintaan, persetujuan, penerimaan barang."
+  },
+  {
+    id: "T-220",
+    listId: "l1",
+    roomId: "r5",
+    peran: "fe",
+    next: "qa",
+    nama: "Live tracking lokasi kurir via WebSocket & GPS",
+    status: "jalan",
+    prioritas: "urgent",
+    assignee: ["u2"],
+    due: "2026-09-06",
+    tags: ["tracking", "gps", "kurir"],
+    sub: [3, 5],
+    komentar: 4,
+    lampiran: 1,
+    estimasi: "8j",
+    storyPoints: 5,
+    deskripsi: "Peta real-time pelacakan kurir jemput dan antar pesanan ke alamat pelanggan."
+  },
+  {
+    id: "T-219",
+    listId: "l1",
+    roomId: "r5",
+    peran: "fe",
+    next: "qa",
+    nama: "Mode offline sinkronisasi bukti terima paket / foto digital",
+    status: "siap",
+    prioritas: "high",
+    assignee: ["u5"],
+    due: "2026-09-08",
+    tags: ["offline", "sync", "pwa"],
+    sub: [1, 4],
+    komentar: 2,
+    lampiran: 1,
+    estimasi: "6j",
+    storyPoints: 3,
+    deskripsi: "Kurir tetap bisa unggah foto tanda tangan saat sinyal hilang di basement."
+  },
+  {
+    id: "T-206",
+    listId: "l1",
+    roomId: "r3",
+    peran: "ux",
+    next: "fe",
+    nama: "Spesifikasi token komponen Alert, Modal & Button v2",
+    status: "jalan",
+    prioritas: "normal",
+    assignee: ["u2"],
+    due: "2026-09-04",
+    tags: ["design-system", "tokens"],
+    sub: [2, 3],
+    komentar: 5,
+    lampiran: 2,
+    estimasi: "5j",
+    storyPoints: 3,
+    deskripsi: "Standarisasi border-radius dan color tokens untuk sistem desain Cyan."
   },
   {
     id: "T-218",
@@ -458,12 +529,13 @@ export const INITIAL_TASKS: Task[] = [
     komentar: 5,
     lampiran: 0,
     estimasi: "3j",
+    storyPoints: 2,
     deskripsi: "Selesai. Validasi pindah ke boundary, service jadi bersih."
   },
   {
     id: "T-215",
     listId: "l1",
-    roomId: "r1",
+    roomId: "r2",
     peran: "qa",
     next: "be",
     nama: "Regresi alur pendaftaran setelah rilis 1.8",
@@ -476,12 +548,13 @@ export const INITIAL_TASKS: Task[] = [
     komentar: 3,
     lampiran: 2,
     estimasi: "4j",
+    storyPoints: 3,
     deskripsi: "Selesai, 12 kasus lulus semua."
   },
   {
     id: "T-212",
     listId: "l1",
-    roomId: "r1",
+    roomId: "r3",
     peran: "ux",
     next: "fe",
     nama: "Token warna & tipografi versi Poppins",
@@ -494,12 +567,13 @@ export const INITIAL_TASKS: Task[] = [
     komentar: 7,
     lampiran: 3,
     estimasi: "6j",
+    storyPoints: 3,
     deskripsi: "Selesai dan sudah dipakai di 3 halaman."
   },
   {
     id: "T-209",
     listId: "l1",
-    roomId: "r1",
+    roomId: "r2",
     peran: "sec",
     next: "devops",
     nama: "Hapus token debug yang ke-commit di .env.example",
@@ -512,6 +586,7 @@ export const INITIAL_TASKS: Task[] = [
     komentar: 8,
     lampiran: 0,
     estimasi: "1j",
+    storyPoints: 1,
     deskripsi: "Selesai. Token dirotasi, riwayat git dibersihkan."
   }
 ];

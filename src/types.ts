@@ -66,6 +66,7 @@ export interface Task {
   komentar: number;
   lampiran: number;
   estimasi: string;
+  storyPoints?: number;
   deskripsi: string;
 }
 
