@@ -374,7 +374,7 @@ export const NewTaskModal: React.FC<NewTaskModalProps> = ({
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               onClick={handleSubmit}
-              className="px-5 py-2 rounded-full text-xs font-semibold bg-gradient-to-r from-[#6FC0EF] via-[#1E6FD9] to-[#12459C] text-white shadow-sm shadow-[#1E6FD9]/20 hover:brightness-105"
+              className="btn-3d-primary px-5 py-2 rounded-full text-xs font-medium cursor-pointer"
             >
               Simpan Tugas
             </motion.button>

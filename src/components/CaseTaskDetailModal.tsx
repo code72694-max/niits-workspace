@@ -242,9 +242,9 @@ export const CaseTaskDetailModal: React.FC<CaseTaskDetailModalProps> = ({
               <button
                 type="button"
                 onClick={handleSave}
-                className="flex items-center gap-1.5 px-5 py-2 rounded-xl bg-[#0B1528] hover:bg-[#1E6FD9] text-white text-xs font-bold shadow-sm transition-colors cursor-pointer"
+                className="flex items-center gap-1.5 px-5 py-2 rounded-full btn-3d-primary text-white text-xs font-medium cursor-pointer"
               >
-                <Save className="w-3.5 h-3.5" />
+                <Save className="w-3.5 h-3.5 stroke-[2.5]" />
                 <span>Simpan Perubahan</span>
               </button>
             </div>

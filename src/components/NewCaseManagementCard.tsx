@@ -25,7 +25,10 @@ import {
   X,
   Edit2,
   Trash2,
-  Tag
+  Tag,
+  User,
+  Clock,
+  ChevronRight
 } from 'lucide-react';
 import { Task, RoleKey, Room } from '../types';
 import { 
@@ -44,6 +47,62 @@ import { ProjectDocsView } from '../views/ProjectDocsView';
 import { ToolsView } from '../views/ToolsView';
 import { SettingsView } from '../views/SettingsView';
 import { CaseTaskDetailModal } from './CaseTaskDetailModal';
+
+export interface RoadmapActivity {
+  id: string;
+  date: string;
+  month: string;
+  title: string;
+  time: string;
+  tag: string;
+  tagColor: string;
+  pic: string;
+  isNext?: boolean;
+}
+
+const INITIAL_ROADMAP_ACTIVITIES: RoadmapActivity[] = [
+  {
+    id: 'rdm-1',
+    date: '08',
+    month: 'Sep',
+    title: 'Sprint Review & Demo Alur',
+    time: '10:00 - 11:30 WIB',
+    tag: 'Meeting',
+    tagColor: 'bg-[#EEF4FB] text-[#2B62D6]',
+    pic: 'HK',
+    isNext: true,
+  },
+  {
+    id: 'rdm-2',
+    date: '12',
+    month: 'Sep',
+    title: 'Peluncuran Alur Kasus v2.4',
+    time: '14:00 WIB',
+    tag: 'Rilis',
+    tagColor: 'bg-[#ECFDF5] text-[#059669]',
+    pic: 'RD',
+  },
+  {
+    id: 'rdm-3',
+    date: '16',
+    month: 'Sep',
+    title: 'Sinkronisasi Google Drive',
+    time: '09:00 - 12:00 WIB',
+    tag: 'Integrasi',
+    tagColor: 'bg-[#EFF6FF] text-[#1D4ED8]',
+    pic: 'SN',
+  },
+  {
+    id: 'rdm-4',
+    date: '22',
+    month: 'Sep',
+    title: 'Evaluasi SLA & Feedback',
+    time: '15:30 WIB',
+    tag: 'Evaluasi',
+    tagColor: 'bg-[#FFF7ED] text-[#EA580C]',
+    pic: 'AL',
+  },
+];
 
 interface NewCaseManagementCardProps {
   tasks?: Task[];
@@ -81,11 +140,34 @@ export const NewCaseManagementCard: React.FC<NewCaseManagementCardProps> = ({
     setInternalTasks(prev => prev.filter(t => !taskIds.includes(t.id)));
   };
 
+  // Roadmap Kegiatan State (Column 4)
+  const [roadmapActivities, setRoadmapActivities] = useState<RoadmapActivity[]>(INITIAL_ROADMAP_ACTIVITIES);
+  const [showAddRoadmap, setShowAddRoadmap] = useState(false);
+  const [newRoadmapTitle, setNewRoadmapTitle] = useState('');
+  const [newRoadmapDate, setNewRoadmapDate] = useState('25');
+  const [newRoadmapMonth, setNewRoadmapMonth] = useState('Sep');
+  const [newRoadmapTime, setNewRoadmapTime] = useState('10:00 WIB');
+  const [newRoadmapTag, setNewRoadmapTag] = useState('Agenda');
+
   // Selected task in the Stage 4 (New Tasks matrix)
   const [selectedTaskSquare, setSelectedTaskSquare] = useState<TaskCategory>('Request Processing');
   
   // Active circular menu icon
   const [activeMenuIndex, setActiveMenuIndex] = useState<number>(0);
+
+  // Hovered circular menu icon index for smooth wave lift dock effect
+  const [hoveredMenuIndex, setHoveredMenuIndex] = useState<number | null>(null);
+
+  // Calculate clean upward lift for hovered button and smooth neighbor attenuation (bell curve descent)
+  const getMenuIconTransform = (idx: number) => {
+    if (hoveredMenuIndex === null) return 'translateY(0px)';
+    const dist = Math.abs(hoveredMenuIndex - idx);
+    if (dist === 0) return 'translateY(-9.5px)';
+    if (dist === 1) return 'translateY(-5.8px)';
+    if (dist === 2) return 'translateY(-2.8px)';
+    if (dist === 3) return 'translateY(-1px)';
+    return 'translateY(0px)';
+  };
 
   // REAL TASK LIST STATE
   const [caseTasks, setCaseTasks] = useState<CaseTask[]>(INITIAL_CASE_TASKS);
@@ -164,8 +246,8 @@ export const NewCaseManagementCard: React.FC<NewCaseManagementCardProps> = ({
   const menuIcons = [
     { 
       id: 'dashboard', 
-      title: 'New Case Managment',
-      subtitle: 'Workflow Matrix & Pipeline Tahapan Kasus',
+      title: 'Hii Hary!',
+      subtitle: 'Semangat tuntaskan target dan produktif berkarya hari ini!',
       label: 'New Case Management (Matriks Alur)', 
       icon: LayoutDashboard, 
     },
@@ -238,22 +320,22 @@ export const NewCaseManagementCard: React.FC<NewCaseManagementCardProps> = ({
       {/* ========================================================================= */}
 
       {/* Desktop & Large Screen Header: Left Wing + Center Subtracted Notch + Right Wing */}
-      <div className="hidden lg:flex items-stretch justify-between w-full h-[74px] shrink-0 relative z-10">
+      <div className="hidden lg:flex items-stretch justify-between w-full h-[74px] shrink-0 relative z-30">
         
         {/* TOP-LEFT WING: White background, rounded top-left corner */}
-        <div className="flex-1 bg-white rounded-tl-[32px] border-t border-l border-[#D5E0ED] px-6 sm:px-7 flex flex-col justify-center shadow-2xs">
-          <h2 className="text-lg font-extrabold text-[#0B1528] tracking-tight font-sans">
-            {menuIcons[activeMenuIndex]?.title || 'New Case Managment'}
+        <div className="flex-1 bg-white rounded-tl-[32px] border-t border-l border-[#E2E8F0] px-6 sm:px-7 flex flex-col justify-center shadow-2xs">
+          <h2 className="text-lg font-semibold text-[#0B1528] tracking-tight font-sans">
+            {menuIcons[activeMenuIndex]?.title || 'Hii Hary!'}
           </h2>
           {menuIcons[activeMenuIndex]?.subtitle && (
-            <p className="text-[11px] text-[#5A6E82] font-medium hidden sm:block truncate mt-0.5">
+            <p className="text-[11px] text-[#64748B] font-normal hidden sm:block truncate mt-0.5">
               {menuIcons[activeMenuIndex].subtitle}
             </p>
           )}
         </div>
 
-        {/* CENTER SUBTRACTED NOTCH: Vector Inverted Fillets with Transparent Cutout Area (scaled down slightly) */}
-        <div className="relative w-[480px] shrink-0 h-[74px] flex items-start justify-center">
+        {/* CENTER SUBTRACTED NOTCH: Vector Inverted Fillets with Transparent Cutout Area */}
+        <div className="relative w-[480px] shrink-0 h-[74px] flex items-start justify-center z-40">
           
           {/* SVG Subtracted Notch Background Path */}
           <svg 
@@ -274,7 +356,7 @@ export const NewCaseManagementCard: React.FC<NewCaseManagementCardProps> = ({
                  Z"
               fill="#FFFFFF"
             />
-            {/* Top border stroke following the inverted fillet notch curve */}
+            {/* Top border stroke following the inverted fillet notch curve with reduced thickness & softer color */}
             <path
               d="M 0 0.5 
                  C 14 0.5, 25 12, 25 26 
@@ -282,36 +364,57 @@ export const NewCaseManagementCard: React.FC<NewCaseManagementCardProps> = ({
                  L 430 52 
                  C 443 52, 455 40, 455 26 
                  C 455 12, 466 0.5, 480 0.5"
-              stroke="#D5E0ED"
-              strokeWidth="1.5"
+              stroke="#E2E8F0"
+              strokeWidth="1"
               fill="none"
             />
           </svg>
 
-          {/* 8 Circular Menu Icons sitting neatly inside the Subtracted Notch (resized to w-9.5 h-9.5) */}
-          <div className="relative z-10 h-[52px] flex items-start justify-center gap-2 sm:gap-2.5 px-3 pt-0">
+          {/* 8 Circular Menu Icons sitting neatly inside the Subtracted Notch with Smooth Neighbor Lift & No Shadows */}
+          <div 
+            className="relative z-40 h-[52px] flex items-center justify-center gap-2 sm:gap-2.5 px-3 pb-2.5"
+            onMouseLeave={() => setHoveredMenuIndex(null)}
+          >
             {menuIcons.map((item, idx) => {
               const IconComponent = item.icon;
               const isActive = activeMenuIndex === idx;
+              const transform = getMenuIconTransform(idx);
 
               return (
-                <div key={item.id} className="relative flex flex-col items-center group">
+                <div 
+                  key={item.id} 
+                  className={`relative flex flex-col items-center justify-center h-full group ${
+                    hoveredMenuIndex === idx ? 'z-50' : 'z-40'
+                  }`}
+                  onMouseEnter={() => setHoveredMenuIndex(idx)}
+                  onMouseMove={() => {
+                    if (hoveredMenuIndex !== idx) {
+                      setHoveredMenuIndex(idx);
+                    }
+                  }}
+                >
                   <button
                     onClick={() => {
                       setActiveMenuIndex(idx);
                     }}
-                    className={`w-9.5 h-9.5 rounded-full flex items-center justify-center transition-all cursor-pointer shadow-2xs ${
+                    style={{
+                      transform,
+                      transition: 'transform 260ms cubic-bezier(0.25, 1, 0.4, 1), background-color 160ms ease, border-color 160ms ease, color 160ms ease',
+                    }}
+                    className={`relative w-9.5 h-9.5 rounded-full flex items-center justify-center cursor-pointer shadow-none select-none ${
+                      hoveredMenuIndex === idx ? 'z-50' : 'z-40'
+                    } ${
                       isActive
-                        ? 'bg-[#0B1528] text-white shadow-xs ring-2 ring-[#0B1528]/25'
-                        : 'bg-white hover:bg-[#F4F8FD] text-[#334D6E] hover:text-[#0B1528] border border-[#D8E1EC] hover:border-[#1E6FD9]/40'
+                        ? 'btn-3d-icon-active text-white'
+                        : 'bg-white hover:bg-[#F8FAFC] text-[#475569] hover:text-[#0B1528] border border-[#E2E8F0] hover:border-[#CBD5E1]'
                     }`}
                     title={item.label}
                   >
                     <IconComponent className="w-4.5 h-4.5" />
                   </button>
 
-                  {/* Hover Floating Tooltip */}
-                  <div className="absolute top-12 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity bg-[#0B1528] text-white text-[11px] font-semibold py-1 px-2.5 rounded-lg whitespace-nowrap z-50 shadow-md">
+                  {/* Hover Floating Tooltip without shadow on the highest layer */}
+                  <div className="absolute top-12 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-150 bg-[#0B1528] text-white text-[11px] font-medium py-1 px-2.5 rounded-lg whitespace-nowrap z-[60] shadow-none border border-slate-700/60">
                     {item.label}
                   </div>
                 </div>
@@ -322,11 +425,11 @@ export const NewCaseManagementCard: React.FC<NewCaseManagementCardProps> = ({
         </div>
 
         {/* TOP-RIGHT WING: White background, rounded top-right corner with Search, Notif, and Profile */}
-        <div className="flex-1 bg-white rounded-tr-[32px] border-t border-r border-[#D5E0ED] px-6 sm:px-7 flex items-center justify-end gap-2 shadow-2xs">
+        <div className="flex-1 bg-white rounded-tr-[32px] border-t border-r border-[#E2E8F0] px-6 sm:px-7 flex items-center justify-end gap-2.5 shadow-2xs">
           {/* Quick Search Button (Circular) */}
           <button
             onClick={onOpenPalette}
-            className="w-9 h-9 rounded-full bg-white border border-[#D8E1EC] hover:bg-[#F4F8FD] text-[#4A5D70] hover:text-[#0A2540] flex items-center justify-center shadow-2xs transition-all active:scale-95 cursor-pointer hover:border-[#1E6FD9]"
+            className="w-9 h-9 rounded-full bg-white border border-[#E2E8F0] hover:bg-[#F8FAFC] text-[#64748B] hover:text-[#0A2540] flex items-center justify-center shadow-2xs transition-all active:scale-95 cursor-pointer hover:border-[#1E6FD9]/30"
             title="Cari cepat (⌘K)"
           >
             <Search className="w-3.5 h-3.5" />
@@ -335,7 +438,7 @@ export const NewCaseManagementCard: React.FC<NewCaseManagementCardProps> = ({
           {/* Notification Bell Button (Circular with Badge) */}
           <button
             onClick={() => onNavigate && onNavigate('inbox')}
-            className="relative w-9 h-9 rounded-full bg-white border border-[#D8E1EC] hover:bg-[#F4F8FD] text-[#4A5D70] hover:text-[#0A2540] flex items-center justify-center shadow-2xs transition-all active:scale-95 cursor-pointer hover:border-[#1E6FD9]"
+            className="relative w-9 h-9 rounded-full bg-white border border-[#E2E8F0] hover:bg-[#F8FAFC] text-[#64748B] hover:text-[#0A2540] flex items-center justify-center shadow-2xs transition-all active:scale-95 cursor-pointer hover:border-[#1E6FD9]/30"
             title="Notifikasi"
           >
             <Bell className="w-3.5 h-3.5" />
@@ -344,28 +447,27 @@ export const NewCaseManagementCard: React.FC<NewCaseManagementCardProps> = ({
             )}
           </button>
 
-          {/* User Profile Avatar in Circle */}
+          {/* User Profile Button with Icon (matching adjacent buttons, no background) */}
           <button
             onClick={() => onNavigate && onNavigate('profile')}
-            className="w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold text-white shadow-xs ring-2 ring-white hover:ring-[#1E6FD9] transition-all cursor-pointer overflow-hidden ml-1 active:scale-95"
-            style={{ backgroundColor: CURRENT_USER.warna || '#12459C' }}
-            title={`Buka profil ${CURRENT_USER.nama} (${CURRENT_USER.inisial})`}
+            className="w-9 h-9 rounded-full bg-white border border-[#E2E8F0] hover:bg-[#F8FAFC] text-[#64748B] hover:text-[#0A2540] flex items-center justify-center shadow-2xs transition-all cursor-pointer overflow-hidden ml-1 active:scale-95 hover:border-[#1E6FD9]/30"
+            title={`Buka profil ${CURRENT_USER.nama}`}
           >
-            {CURRENT_USER.inisial}
+            <User className="w-4 h-4" />
           </button>
         </div>
 
       </div>
 
       {/* Mobile/Tablet Fallback Header (< 1024px) */}
-      <div className="lg:hidden shrink-0 bg-white rounded-t-[32px] border-t border-x border-[#D5E0ED] p-5 space-y-4">
+      <div className="lg:hidden shrink-0 bg-white rounded-t-[32px] border-t border-x border-[#E2E8F0] p-5 space-y-4">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-xl font-extrabold text-[#0B1528] tracking-tight">
-              {menuIcons[activeMenuIndex]?.title || 'New Case Managment'}
+            <h2 className="text-lg font-semibold text-[#0B1528] tracking-tight">
+              {menuIcons[activeMenuIndex]?.title || 'Hii Hary!'}
             </h2>
             {menuIcons[activeMenuIndex]?.subtitle && (
-              <p className="text-xs text-[#5A6E82] mt-0.5">
+              <p className="text-xs text-[#64748B] font-normal mt-0.5">
                 {menuIcons[activeMenuIndex].subtitle}
               </p>
             )}
@@ -374,14 +476,14 @@ export const NewCaseManagementCard: React.FC<NewCaseManagementCardProps> = ({
           <div className="flex items-center gap-1.5">
             <button
               onClick={onOpenPalette}
-              className="w-8 h-8 rounded-full bg-white border border-[#D8E1EC] hover:bg-[#F4F8FD] text-[#4A5D70] flex items-center justify-center shadow-2xs transition-all active:scale-95"
+              className="w-8 h-8 rounded-full bg-white border border-[#E2E8F0] hover:bg-[#F8FAFC] text-[#64748B] flex items-center justify-center shadow-2xs transition-all active:scale-95"
               title="Cari cepat"
             >
               <Search className="w-3.5 h-3.5" />
             </button>
             <button
               onClick={() => onNavigate && onNavigate('inbox')}
-              className="relative w-8 h-8 rounded-full bg-white border border-[#D8E1EC] hover:bg-[#F4F8FD] text-[#4A5D70] flex items-center justify-center shadow-2xs transition-all active:scale-95"
+              className="relative w-8 h-8 rounded-full bg-white border border-[#E2E8F0] hover:bg-[#F8FAFC] text-[#64748B] flex items-center justify-center shadow-2xs transition-all active:scale-95"
               title="Notifikasi"
             >
               <Bell className="w-3.5 h-3.5" />
@@ -391,17 +493,16 @@ export const NewCaseManagementCard: React.FC<NewCaseManagementCardProps> = ({
             </button>
             <button
               onClick={() => onNavigate && onNavigate('profile')}
-              className="w-8 h-8 rounded-full flex items-center justify-center text-[10px] font-bold text-white shadow-xs ring-2 ring-white ml-0.5 active:scale-95"
-              style={{ backgroundColor: CURRENT_USER.warna || '#12459C' }}
+              className="w-8 h-8 rounded-full bg-white border border-[#E2E8F0] hover:bg-[#F8FAFC] text-[#64748B] hover:text-[#0A2540] flex items-center justify-center shadow-2xs transition-all active:scale-95 cursor-pointer ml-0.5"
               title="Profil"
             >
-              {CURRENT_USER.inisial}
+              <User className="w-3.5 h-3.5" />
             </button>
           </div>
         </div>
 
-        {/* Circular Menu Icons in Mobile View with slightly added bottom margin */}
-        <div className="flex items-center gap-2.5 overflow-x-auto pb-2 scrollbar-none mb-1">
+        {/* Circular Menu Icons in Mobile View */}
+        <div className="flex items-center gap-2.5 overflow-x-auto pb-3 mb-2 scrollbar-none">
           {menuIcons.map((item, idx) => {
             const IconComponent = item.icon;
             const isActive = activeMenuIndex === idx;
@@ -412,10 +513,10 @@ export const NewCaseManagementCard: React.FC<NewCaseManagementCardProps> = ({
                   onClick={() => {
                     setActiveMenuIndex(idx);
                   }}
-                  className={`w-10 h-10 rounded-full flex items-center justify-center transition-all cursor-pointer ${
+                  className={`w-10 h-10 rounded-full flex items-center justify-center transition-all cursor-pointer shadow-none ${
                     isActive
-                      ? 'bg-[#0B1528] text-white shadow-xs'
-                      : 'bg-[#F4F8FD] text-[#334D6E] border border-[#D8E1EC]'
+                      ? 'btn-3d-icon-active text-white'
+                      : 'bg-[#F8FAFC] text-[#475569] border border-[#E2E8F0] hover:border-[#CBD5E1]'
                   }`}
                   title={item.label}
                 >
@@ -430,7 +531,7 @@ export const NewCaseManagementCard: React.FC<NewCaseManagementCardProps> = ({
       {/* ========================================================================= */}
       {/* 2. CARD BODY: CONTINUOUS WHITE CARD MERGED WITH SUBTRACTED NOTCH & WINGS   */}
       {/* ========================================================================= */}
-      <div className="relative bg-white rounded-b-[36px] sm:rounded-b-[42px] border-b border-x border-[#D5E0ED] shadow-xs flex-1 min-h-0 flex flex-col overflow-hidden">
+      <div className="relative bg-white rounded-b-[36px] sm:rounded-b-[42px] border-b border-x border-[#E2E8F0] shadow-xs flex-1 min-h-0 flex flex-col overflow-hidden">
         <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden p-5 sm:p-7 scrollbar-thin scrollbar-thumb-slate-200 hover:scrollbar-thumb-slate-300">
           <AnimatePresence mode="wait">
           {activeMenuIndex === 0 && (
@@ -441,15 +542,15 @@ export const NewCaseManagementCard: React.FC<NewCaseManagementCardProps> = ({
               exit={{ opacity: 0, y: -8 }}
               transition={{ duration: 0.18 }}
             >
-              {/* INTERACTIVE TASK LIST TOOLBAR: Filter tabs, category filter indicator & quick search */}
+              {/* INTERACTIVE TASK LIST TOOLBAR: Filter tabs, category filter indicator, + Buat dokumen & quick search */}
         <div className="mb-6 flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-[#F0F4F8] sticky -top-5 sm:-top-7 z-20 bg-white pt-1">
           {/* Status Filter Tabs */}
-          <div className="flex items-center gap-1.5 bg-[#F4F7FA] p-1 rounded-2xl border border-[#E2E8F0]">
+          <div className="flex items-center gap-1.5 bg-[#F4F7FA] p-1 rounded-full border border-[#E2E8F0]">
             <button
               onClick={() => setTaskStatusFilter('all')}
-              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+              className={`px-3.5 py-1.5 rounded-full text-xs font-medium transition-all cursor-pointer ${
                 taskStatusFilter === 'all'
-                  ? 'bg-white text-[#0B1528] shadow-2xs'
+                  ? 'btn-3d-active text-white'
                   : 'text-[#5A6E82] hover:text-[#0B1528]'
               }`}
             >
@@ -457,9 +558,9 @@ export const NewCaseManagementCard: React.FC<NewCaseManagementCardProps> = ({
             </button>
             <button
               onClick={() => setTaskStatusFilter('pending')}
-              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+              className={`px-3.5 py-1.5 rounded-full text-xs font-medium transition-all cursor-pointer ${
                 taskStatusFilter === 'pending'
-                  ? 'bg-white text-[#0B1528] shadow-2xs'
+                  ? 'btn-3d-active text-white'
                   : 'text-[#5A6E82] hover:text-[#0B1528]'
               }`}
             >
@@ -467,9 +568,9 @@ export const NewCaseManagementCard: React.FC<NewCaseManagementCardProps> = ({
             </button>
             <button
               onClick={() => setTaskStatusFilter('completed')}
-              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+              className={`px-3.5 py-1.5 rounded-full text-xs font-medium transition-all cursor-pointer ${
                 taskStatusFilter === 'completed'
-                  ? 'bg-white text-[#0B1528] shadow-2xs'
+                  ? 'btn-3d-active text-white'
                   : 'text-[#5A6E82] hover:text-[#0B1528]'
               }`}
             >
@@ -477,10 +578,10 @@ export const NewCaseManagementCard: React.FC<NewCaseManagementCardProps> = ({
             </button>
           </div>
 
-          {/* Active Category Filter Badge & Search */}
-          <div className="flex items-center gap-2">
+          {/* Active Category Filter Badge, '+ Buat dokumen' Button & Search */}
+          <div className="flex items-center gap-2.5">
             {categoryFilter && (
-              <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#0B1528] text-white text-[11px] font-medium shadow-2xs">
+              <div className="flex items-center gap-1.5 px-3 py-1 rounded-full btn-3d-primary text-white text-[11px] font-medium">
                 <span>Kategori: {categoryFilter}</span>
                 <button
                   onClick={() => setCategoryFilter(null)}
@@ -499,7 +600,7 @@ export const NewCaseManagementCard: React.FC<NewCaseManagementCardProps> = ({
                 placeholder="Cari tugas alur..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-8.5 pr-3 py-1.5 rounded-full text-xs bg-[#F4F7FA] border border-[#E2E8F0] focus:border-[#1E6FD9] outline-none text-[#0B1528] w-36 sm:w-48 placeholder-[#8CA0B3]"
+                className="pl-8.5 pr-3 py-1.5 rounded-full text-xs bg-[#F4F7FA] border border-[#E2E8F0] focus:border-[#1E6FD9] outline-none text-[#0B1528] w-36 sm:w-44 placeholder-[#8CA0B3]"
               />
               {searchQuery && (
                 <button
@@ -682,7 +783,7 @@ export const NewCaseManagementCard: React.FC<NewCaseManagementCardProps> = ({
                         </button>
                         <button
                           onClick={() => handleAddQuickTask('allocation', newTitle)}
-                          className="px-3 py-1 text-[11px] bg-[#0B1528] text-white rounded-md font-bold"
+                          className="px-3 py-1 text-[11px] bg-[#0B1528] text-white rounded-md font-medium"
                         >
                           Tambah
                         </button>
@@ -691,22 +792,12 @@ export const NewCaseManagementCard: React.FC<NewCaseManagementCardProps> = ({
                   ) : (
                     <button
                       onClick={() => setAddingInStage('allocation')}
-                      className="w-full py-2 rounded-xl border border-dashed border-slate-200 hover:border-[#1E6FD9] text-slate-500 hover:text-[#1E6FD9] text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                      className="w-full py-2 rounded-xl border border-dashed border-slate-200 hover:border-[#1E6FD9] text-slate-500 hover:text-[#1E6FD9] text-xs font-medium flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
                     >
                       <Plus className="w-3.5 h-3.5" />
                       <span>Tambah Tugas</span>
                     </button>
                   )}
-                </div>
-
-                {/* Column Label & Task Counter */}
-                <div className="text-center pt-1">
-                  <span className="text-xs font-bold text-[#334D6E]">
-                    Case Allocation
-                  </span>
-                  <span className="ml-2 px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#E8EEF5] text-[#1E6FD9]">
-                    {completedCount}/{stageTasks.length} Selesai
-                  </span>
                 </div>
               </div>
             );
@@ -755,7 +846,7 @@ export const NewCaseManagementCard: React.FC<NewCaseManagementCardProps> = ({
                                 className="w-full h-full object-cover"
                               />
                             ) : (
-                              <div className="w-full h-full flex items-center justify-center text-[10px] font-bold text-slate-400">
+                              <div className="w-full h-full flex items-center justify-center text-[10px] font-medium text-slate-400">
                                 ?
                               </div>
                             )}
@@ -763,7 +854,7 @@ export const NewCaseManagementCard: React.FC<NewCaseManagementCardProps> = ({
                           <span className={`text-xs truncate transition-all ${
                             task.completed 
                               ? 'line-through decoration-slate-300 text-slate-400' 
-                              : task.isBold ? 'font-bold text-[#0B1528]' : 'text-[#1E293B] font-medium'
+                              : task.isBold ? 'font-semibold text-[#0B1528]' : 'text-[#1E293B] font-normal'
                           }`}>
                             {task.title}
                           </span>
@@ -850,7 +941,7 @@ export const NewCaseManagementCard: React.FC<NewCaseManagementCardProps> = ({
                         </button>
                         <button
                           onClick={() => handleAddQuickTask('identification', newTitle)}
-                          className="px-3 py-1 text-[11px] bg-[#0B1528] text-white rounded-md font-bold"
+                          className="px-3 py-1 text-[11px] bg-[#0B1528] text-white rounded-md font-medium"
                         >
                           Tambah
                         </button>
@@ -859,22 +950,12 @@ export const NewCaseManagementCard: React.FC<NewCaseManagementCardProps> = ({
                   ) : (
                     <button
                       onClick={() => setAddingInStage('identification')}
-                      className="w-full py-1.5 rounded-xl border border-dashed border-slate-200 hover:border-[#1E6FD9] text-slate-500 hover:text-[#1E6FD9] text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                      className="w-full py-1.5 rounded-xl border border-dashed border-slate-200 hover:border-[#1E6FD9] text-slate-500 hover:text-[#1E6FD9] text-xs font-medium flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
                     >
                       <Plus className="w-3.5 h-3.5" />
                       <span>Tambah Tugas</span>
                     </button>
                   )}
-                </div>
-
-                {/* Column Label & Task Counter */}
-                <div className="text-center pt-1">
-                  <span className="text-xs font-bold text-[#334D6E]">
-                    Issue Identification
-                  </span>
-                  <span className="ml-2 px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#E8EEF5] text-[#1E6FD9]">
-                    {completedCount}/{stageTasks.length} Selesai
-                  </span>
                 </div>
               </div>
             );
@@ -1041,96 +1122,160 @@ export const NewCaseManagementCard: React.FC<NewCaseManagementCardProps> = ({
                     </button>
                   )}
                 </div>
-
-                {/* Column Label & Task Counter */}
-                <div className="text-center pt-1">
-                  <span className="text-xs font-bold text-[#334D6E]">
-                    Technical Resolution
-                  </span>
-                  <span className="ml-2 px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#E8EEF5] text-[#1E6FD9]">
-                    {completedCount}/{stageTasks.length} Selesai
-                  </span>
-                </div>
               </div>
             );
           })()}
 
           {/* ========================================================================= */}
-          {/* COLUMN 4: "New Tasks" (Matriks Kategori Tugas & Quick Creator)            */}
+          {/* COLUMN 4: "Roadmap Kegiatan yang Akan Datang"                             */}
+          {/* Clean, single-border container, no nested card bubbles                    */}
           {/* ========================================================================= */}
           <div className="flex flex-col justify-between space-y-3">
             
-            {/* Subtle Substrate Panel holding the 2x3 Grid */}
-            <div className="bg-[#DFE7F1]/70 p-2.5 sm:p-3 rounded-[32px] border border-[#D0DAE6]/80 shadow-2xs space-y-2.5">
-              <div className="grid grid-cols-2 gap-2.5 sm:gap-3">
-                {matrixCards.map((card) => {
-                  const isSelected = selectedTaskSquare === card.id || categoryFilter === card.id;
-                  const categoryCount = caseTasks.filter(t => t.category === card.id).length;
-
-                  return (
-                    <button
-                      key={card.id}
-                      onClick={() => {
-                        setSelectedTaskSquare(card.id as TaskCategory);
-                        // Toggle category filter
-                        if (categoryFilter === card.id) {
-                          setCategoryFilter(null);
-                        } else {
-                          setCategoryFilter(card.id as TaskCategory);
-                        }
-                      }}
-                      className={`h-20 sm:h-22 p-2.5 rounded-[22px] flex flex-col justify-center items-center text-center transition-all cursor-pointer shadow-2xs group relative ${
-                        isSelected
-                          ? 'bg-[#0B1528] text-white shadow-md scale-[1.02]'
-                          : 'bg-white text-[#1E293B] border border-white/80 hover:border-[#0B1528]/40 hover:bg-[#FBFDFF]'
-                      }`}
-                      title={`Klik untuk filter tugas kategori ${card.id}`}
-                    >
-                      <span className={`text-[11px] font-bold leading-tight block ${
-                        isSelected ? 'text-white' : 'text-[#1E293B]'
-                      }`}>
-                        {card.labelTop}
-                      </span>
-                      <span className={`text-[11px] font-bold leading-tight block ${
-                        isSelected ? 'text-white' : 'text-[#1E293B]'
-                      }`}>
-                        {card.labelBottom}
-                      </span>
-
-                      {/* Counter Badge */}
-                      <span className={`mt-1 text-[9px] px-1.5 py-0.2 rounded-full font-bold ${
-                        isSelected ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-600'
-                      }`}>
-                        {categoryCount} tugas
-                      </span>
-                    </button>
-                  );
-                })}
+            {/* Single Clean Container - No nested cards inside cards */}
+            <div className="bg-white rounded-[32px] p-4 sm:p-5 border border-[#E2E8F0] space-y-3.5">
+              
+              {/* Header */}
+              <div className="flex items-center justify-between pb-2.5 border-b border-[#F1F5F9]">
+                <div className="flex items-center gap-2">
+                  <div className="w-7 h-7 rounded-lg bg-[#EEF4FB] text-[#1E6FD9] flex items-center justify-center">
+                    <CalendarIcon className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <h3 className="text-xs font-semibold text-[#0B1528] tracking-tight">Roadmap Kegiatan</h3>
+                    <p className="text-[10px] text-[#64748B]">Jadwal & Agenda Mendatang</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setShowAddRoadmap(!showAddRoadmap)}
+                  className="w-7 h-7 rounded-full hover:bg-[#F1F5F9] border border-[#E2E8F0] text-[#64748B] hover:text-[#1E6FD9] flex items-center justify-center transition-colors cursor-pointer"
+                  title="Tambah Agenda Baru"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                </button>
               </div>
 
-              {/* Quick Add Task Button for Selected Category */}
-              <button
-                onClick={() => {
-                  const title = prompt(`Tambah tugas baru untuk kategori "${selectedTaskSquare}":`, `Proses ${selectedTaskSquare}`);
-                  if (title && title.trim()) {
-                    handleAddQuickTask('allocation', title.trim());
-                  }
-                }}
-                className="w-full py-2 px-3 rounded-xl bg-white hover:bg-[#0B1528] hover:text-white border border-[#CCD8E6] text-[#0B1528] text-xs font-bold transition-all shadow-2xs flex items-center justify-center gap-1.5 cursor-pointer"
-              >
-                <Plus className="w-3.5 h-3.5" />
-                <span>+ Buat Kasus / Tugas Baru</span>
-              </button>
-            </div>
+              {/* Add New Activity Inline Form */}
+              {showAddRoadmap && (
+                <div className="p-3 rounded-2xl bg-[#F8FAFC] border border-[#E2E8F0] space-y-2 text-xs">
+                  <input
+                    type="text"
+                    placeholder="Nama agenda kegiatan..."
+                    value={newRoadmapTitle}
+                    onChange={(e) => setNewRoadmapTitle(e.target.value)}
+                    className="w-full px-2.5 py-1.5 rounded-lg border border-[#CBD5E1] bg-white text-xs outline-none focus:border-[#356DE4]"
+                    autoFocus
+                  />
+                  <div className="grid grid-cols-2 gap-1.5">
+                    <div className="flex gap-1">
+                      <input
+                        type="text"
+                        placeholder="Tgl (25)"
+                        value={newRoadmapDate}
+                        onChange={(e) => setNewRoadmapDate(e.target.value)}
+                        className="w-1/2 px-2 py-1 rounded-lg border border-[#CBD5E1] bg-white text-[11px] text-center"
+                      />
+                      <input
+                        type="text"
+                        placeholder="Bln (Sep)"
+                        value={newRoadmapMonth}
+                        onChange={(e) => setNewRoadmapMonth(e.target.value)}
+                        className="w-1/2 px-2 py-1 rounded-lg border border-[#CBD5E1] bg-white text-[11px] text-center"
+                      />
+                    </div>
+                    <input
+                      type="text"
+                      placeholder="Waktu (10:00 WIB)"
+                      value={newRoadmapTime}
+                      onChange={(e) => setNewRoadmapTime(e.target.value)}
+                      className="px-2 py-1 rounded-lg border border-[#CBD5E1] bg-white text-[11px]"
+                    />
+                  </div>
+                  <div className="flex items-center justify-end gap-1.5 pt-1">
+                    <button
+                      onClick={() => setShowAddRoadmap(false)}
+                      className="px-2.5 py-1 rounded-md text-[11px] text-slate-500 hover:bg-slate-200 cursor-pointer"
+                    >
+                      Batal
+                    </button>
+                    <button
+                      onClick={() => {
+                        if (newRoadmapTitle.trim()) {
+                          setRoadmapActivities(prev => [
+                            ...prev,
+                            {
+                              id: `rdm-${Date.now()}`,
+                              date: newRoadmapDate.trim() || '28',
+                              month: newRoadmapMonth.trim() || 'Sep',
+                              title: newRoadmapTitle.trim(),
+                              time: newRoadmapTime.trim() || '10:00 WIB',
+                              tag: newRoadmapTag || 'Agenda',
+                              tagColor: 'bg-[#EEF4FB] text-[#2B62D6]',
+                              pic: CURRENT_USER.inisial || 'HK',
+                            }
+                          ]);
+                          setNewRoadmapTitle('');
+                          setShowAddRoadmap(false);
+                        }
+                      }}
+                      className="px-3 py-1 rounded-md text-[11px] font-medium bg-[#0B1528] text-white hover:bg-[#1E6FD9] cursor-pointer"
+                    >
+                      Simpan
+                    </button>
+                  </div>
+                </div>
+              )}
 
-            {/* Column Label */}
-            <div className="text-center pt-1">
-              <span className="text-xs font-bold text-[#334D6E]">
-                New Tasks
-              </span>
-              <span className="ml-2 px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#E8EEF5] text-[#1E6FD9]">
-                6 Kategori Alur
-              </span>
+              {/* Vertical Timeline with Continuous Dashed Line */}
+              <div className="relative pl-0.5 space-y-1.5 py-1">
+                {/* Continuous Dashed Line Going Top to Bottom */}
+                <div className="absolute left-[19px] top-4 bottom-4 w-0 border-l-2 border-dashed border-[#CBD5E1] pointer-events-none" />
+
+                {roadmapActivities.map((act) => (
+                  <div key={act.id} className="relative flex items-start gap-3 py-2 border-b border-[#F1F5F9] last:border-b-0 group">
+                    {/* Circular Date Node ('tngl nya lignkran dan clean estetik') */}
+                    <div className={`relative z-10 w-10 h-10 rounded-full flex flex-col items-center justify-center shrink-0 transition-all ${
+                      act.isNext
+                        ? 'bg-white border-2 border-[#356DE4] text-[#1E6FD9] ring-2 ring-[#356DE4]/15'
+                        : 'bg-white border border-[#CBD5E1] text-[#334D6E] group-hover:border-[#94A3B8]'
+                    }`}>
+                      <span className="text-[12px] font-semibold leading-none">{act.date}</span>
+                      <span className="text-[8px] font-medium uppercase tracking-wider text-[#64748B] leading-none mt-0.5">{act.month}</span>
+                    </div>
+
+                    {/* Clean typography without nested container box */}
+                    <div className="flex-1 min-w-0 pt-0.5">
+                      <div className="flex items-center justify-between gap-1.5 mb-1">
+                        <h4 className="text-xs font-medium text-[#0B1528] leading-tight truncate">{act.title}</h4>
+                        <span className={`text-[9px] px-1.5 py-0.2 rounded-full font-medium shrink-0 ${act.tagColor}`}>
+                          {act.tag}
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between text-[10px] text-[#64748B]">
+                        <div className="flex items-center gap-1">
+                          <Clock className="w-3 h-3 text-[#94A3B8]" />
+                          <span>{act.time}</span>
+                        </div>
+                        <span className="w-4 h-4 rounded-full bg-[#F1F5F9] border border-[#E2E8F0] text-[#475569] text-[8px] font-medium flex items-center justify-center">
+                          {act.pic}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Quick Add Agenda Button */}
+              {!showAddRoadmap && (
+                <button
+                  onClick={() => setShowAddRoadmap(true)}
+                  className="w-full py-2.5 rounded-2xl border border-dashed border-[#CBD5E1] hover:border-[#1E6FD9] hover:bg-[#F8FAFC] text-[#64748B] hover:text-[#1E6FD9] text-xs font-medium flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>Tambah Agenda Kegiatan</span>
+                </button>
+              )}
+
             </div>
 
           </div>

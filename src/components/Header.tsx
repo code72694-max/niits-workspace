@@ -6,7 +6,8 @@ import {
   Plus, 
   Menu,
   Layers,
-  Sparkles
+  Sparkles,
+  User
 } from 'lucide-react';
 import { Room, RoleKey } from '../types';
 import { CURRENT_USER } from '../data/mockData';
@@ -95,7 +96,7 @@ export const Header: React.FC<HeaderProps> = ({
           </button>
         </div>
 
-        {/* Center: Exactly 3 Navigation Menus with Solid Black Pill when selected */}
+        {/* Center: Exactly 3 Navigation Menus with Soft 3D Pill when selected */}
         <nav className="hidden lg:flex items-center gap-1 xl:gap-2">
           {navTabs.map((tab) => {
             const isActive = isTabActive(tab);
@@ -104,9 +105,9 @@ export const Header: React.FC<HeaderProps> = ({
                 key={tab.id}
                 onClick={() => onNavigate(tab.page)}
                 title={tab.tooltip}
-                className={`transition-all duration-200 cursor-pointer text-xs font-semibold ${
+                className={`transition-all duration-200 cursor-pointer text-xs font-medium ${
                   isActive
-                    ? 'bg-black text-white px-5 py-2 rounded-full shadow-sm hover:brightness-110 active:scale-95'
+                    ? 'btn-3d-primary px-5 py-2 rounded-full'
                     : 'text-[#4A5D70] hover:text-[#0A2540] px-4 py-2 rounded-full hover:bg-white/70'
                 }`}
               >
@@ -150,14 +151,13 @@ export const Header: React.FC<HeaderProps> = ({
                 )}
               </button>
 
-              {/* User Profile Avatar in Circle matching Image 2 */}
+              {/* User Profile Button with Icon (no background, matching adjacent buttons) */}
               <button
                 onClick={() => onNavigate('profile')}
-                className="w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold text-white shadow-xs ring-2 ring-white hover:ring-[#1E6FD9] transition-all cursor-pointer overflow-hidden ml-1"
-                style={{ backgroundColor: CURRENT_USER.warna || '#12459C' }}
-                title="Buka profil saya"
+                className="w-9 h-9 rounded-full bg-white border border-[#D8E1EC] hover:bg-[#F4F8FD] text-[#4A5D70] hover:text-[#0A2540] flex items-center justify-center shadow-2xs transition-transform active:scale-95 cursor-pointer ml-1"
+                title={`Buka profil ${CURRENT_USER.nama}`}
               >
-                {CURRENT_USER.inisial}
+                <User className="w-4 h-4" />
               </button>
             </div>
           ) : (

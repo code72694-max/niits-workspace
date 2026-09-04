@@ -268,9 +268,9 @@ export const ToolsView: React.FC<ToolsViewProps> = () => {
               <button
                 key={cat}
                 onClick={() => setSelectedCategory(cat)}
-                className={`px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
+                className={`px-3.5 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-all cursor-pointer ${
                   selectedCategory === cat
-                    ? 'bg-[#0B1528] text-white shadow-2xs'
+                    ? 'btn-3d-active text-white'
                     : 'bg-white border border-[#D8E1EC] text-[#4A5D70] hover:bg-[#F4F8FD]'
                 }`}
               >
@@ -337,7 +337,7 @@ export const ToolsView: React.FC<ToolsViewProps> = () => {
                     e.stopPropagation();
                     setActiveTool(tool);
                   }}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#0B1528] group-hover:bg-[#1E6FD9] text-white text-xs font-bold transition-all shadow-2xs active:scale-95 cursor-pointer"
+                  className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full btn-3d-primary text-white text-xs font-medium transition-all active:scale-95 cursor-pointer"
                 >
                   <span>Gunakan Tool</span>
                   <ArrowRight className="w-3.5 h-3.5" />
@@ -776,9 +776,9 @@ const ToolRunnerModal: React.FC<ToolRunnerModalProps> = ({ tool, onClose }) => {
             <button
               disabled={fileList.length === 0 && !isDone}
               onClick={isDone ? handleDownloadSimulatedFile : handleStartProcess}
-              className={`px-5 py-2 rounded-full text-xs font-bold flex items-center gap-2 transition-all shadow-xs cursor-pointer ${
+              className={`px-5 py-2 rounded-full text-xs font-medium flex items-center gap-2 transition-all cursor-pointer ${
                 fileList.length > 0 || isDone
-                  ? 'bg-[#0B1528] hover:bg-[#1E6FD9] text-white active:scale-95'
+                  ? 'btn-3d-primary text-white active:scale-95'
                   : 'bg-[#E2EAF3] text-[#8CA9C9] cursor-not-allowed'
               }`}
             >

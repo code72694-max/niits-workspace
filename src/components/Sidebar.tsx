@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { 
   ChevronLeft,
   ChevronRight,
+  ArrowLeft,
   Share2, 
   Upload, 
   Star, 
@@ -48,6 +49,15 @@ interface SidebarProps {
   isMobileOpen?: boolean;
   onCloseMobile?: () => void;
   onShowToast?: (message: string, type?: 'success' | 'info') => void;
+  // Article Detail Mode Navigation Props:
+  isArticleDetail?: boolean;
+  onBackFromArticleDetail?: () => void;
+  onPrevArticle?: () => void;
+  onNextArticle?: () => void;
+  hasPrevArticle?: boolean;
+  hasNextArticle?: boolean;
+  prevArticleTitle?: string;
+  nextArticleTitle?: string;
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
@@ -61,7 +71,15 @@ export const Sidebar: React.FC<SidebarProps> = ({
   unreadChatCount = 12,
   isMobileOpen = false,
   onCloseMobile,
-  onShowToast
+  onShowToast,
+  isArticleDetail = false,
+  onBackFromArticleDetail,
+  onPrevArticle,
+  onNextArticle,
+  hasPrevArticle = false,
+  hasNextArticle = false,
+  prevArticleTitle,
+  nextArticleTitle
 }) => {
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
@@ -215,7 +233,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       icon: BookOpen,
       action: () => handleNavigate('articles'),
       active: currentPage === 'articles' || currentPage === 'artikel',
-      hasSubmenu: true
+      hasSubmenu: false
     },
     {
       id: 'team',
@@ -223,7 +241,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       icon: Users,
       action: () => handleNavigate('team'),
       active: currentPage === 'team' || currentPage === 'members',
-      hasSubmenu: true
+      hasSubmenu: false
     }
   ];
 
@@ -271,118 +289,171 @@ export const Sidebar: React.FC<SidebarProps> = ({
       {/* DESKTOP: Pure Floating Circular Buttons (No Container)                     */}
       {/* ========================================================================= */}
       <aside 
-        className="hidden md:flex flex-col items-center justify-between pt-0 pb-1 shrink-0 z-[60] relative select-none h-full w-[44px] mr-3.5 lg:mr-5"
+        className="hidden md:flex flex-col items-center justify-between pt-0 pb-1 shrink-0 z-[60] relative select-none h-full w-10"
       >
-        {/* TOP: Bruno PMO Brand Icon at the very top corner */}
-        <div className="w-full flex flex-col items-center">
-          <button
-            onClick={() => handleNavigate('dash')}
-            className="relative group w-10 h-10 rounded-full flex items-center justify-center bg-[#0B1528] text-white shadow-xs hover:shadow-md transition-all active:scale-95 cursor-pointer border border-[#0B1528] hover:ring-2 hover:ring-[#1E6FD9]/40"
-            title="Bruno PMO (Home)"
-          >
-            <span className="font-black text-sm tracking-wider text-white">B</span>
-            <span className="absolute left-13 px-2.5 py-1 rounded-lg bg-[#0A2540] text-white text-[11px] font-medium whitespace-nowrap shadow-lg opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity z-50">
-              Bruno PMO
-            </span>
-          </button>
-        </div>
-
-        {/* CENTER: All Menus Vertically Centered */}
-        <div className="w-full flex-1 flex flex-col items-center justify-center gap-2 my-auto">
-          {/* 1. Primary Menus (Dashboard, Articles, Team) moved from Header */}
-          <div className="w-full flex flex-col items-center gap-2">
-            {primaryNavItems.map((item) => (
-              <button
-                key={item.id}
-                onClick={(e) => handleItemClick(item.id, e, !!item.hasSubmenu, item.action)}
-                onMouseEnter={(e) => item.hasSubmenu && handleMouseEnterItem(item.id, e)}
-                onMouseLeave={handleMouseLeaveItem}
-                className={`relative group w-10 h-10 rounded-full flex items-center justify-center transition-all cursor-pointer shadow-2xs hover:shadow-xs active:scale-95 ${
-                  item.active || activeFlyout === item.id
-                    ? 'bg-black text-white shadow-sm ring-1 ring-black/40 font-semibold'
-                    : 'bg-white border border-[#D5E0ED] text-[#4A5D70] hover:text-[#0A2540] hover:border-[#B4C6DC] hover:bg-white'
-                }`}
-                title={item.label}
-              >
-                <item.icon className={`w-4.5 h-4.5 shrink-0 ${item.active || activeFlyout === item.id ? 'text-white' : ''}`} />
-
-                {/* Hover Tooltip when NO flyout is open */}
-                {activeFlyout !== item.id && (
-                  <span className="absolute left-13 px-2.5 py-1 rounded-lg bg-[#0A2540] text-white text-[11px] font-medium whitespace-nowrap shadow-lg opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity z-50">
-                    {item.label}
-                  </span>
-                )}
-              </button>
-            ))}
-          </div>
-
-          {/* Subtle separator divider line */}
-          <div className="w-5 h-[1.5px] bg-[#D5E0ED] my-1 rounded-full shrink-0" />
-
-          {/* 2. Workspace & Operational Tools */}
-          <div className="w-full flex flex-col items-center gap-2">
-            {railItems.map((item) => (
-              <button
-                key={item.id}
-                onClick={(e) => handleItemClick(item.id, e, !!item.hasSubmenu, item.action)}
-                onMouseEnter={(e) => item.hasSubmenu && handleMouseEnterItem(item.id, e)}
-                onMouseLeave={handleMouseLeaveItem}
-                className={`relative group w-10 h-10 rounded-full flex items-center justify-center transition-all cursor-pointer shadow-2xs hover:shadow-xs active:scale-95 ${
-                  item.active || activeFlyout === item.id
-                    ? 'bg-black text-white shadow-sm ring-1 ring-black/40 font-semibold'
-                    : 'bg-white border border-[#D5E0ED] text-[#4A5D70] hover:text-[#0A2540] hover:border-[#B4C6DC] hover:bg-white'
-                }`}
-                title={item.label}
-              >
-                <item.icon className={`w-4.5 h-4.5 shrink-0 ${item.active || activeFlyout === item.id ? 'text-white' : ''}`} />
-
-                {/* Badge for counts */}
-                {item.badge && item.badge > 0 && (
-                  <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-[16px] px-1 rounded-full bg-[#C4562B] text-white text-[8px] font-bold flex items-center justify-center ring-2 ring-white shadow-2xs">
-                    {item.badge}
-                  </span>
-                )}
-
-                {/* Hover Tooltip when NO flyout is open */}
-                {activeFlyout !== item.id && (
-                  <span className="absolute left-13 px-2.5 py-1 rounded-lg bg-[#0A2540] text-white text-[11px] font-medium whitespace-nowrap shadow-lg opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity z-50">
-                    {item.label}
-                  </span>
-                )}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* BOTTOM: Chat & Saluran Tim at the very bottom corner */}
-        <div className="w-full flex flex-col items-center pt-2">
-          <button
-            onClick={(e) => handleItemClick('chat', e, true, () => handleNavigate('chat'))}
-            onMouseEnter={(e) => handleMouseEnterItem('chat', e)}
-            onMouseLeave={handleMouseLeaveItem}
-            className={`relative group w-10 h-10 rounded-full flex items-center justify-center transition-all cursor-pointer shadow-2xs hover:shadow-xs active:scale-95 ${
-              currentPage === 'chat' || activeFlyout === 'chat'
-                ? 'bg-[#00A884] text-white shadow-sm ring-2 ring-[#00A884]/40 font-semibold'
-                : 'bg-white border border-[#D5E0ED] text-[#4A5D70] hover:text-[#00A884] hover:border-[#00A884]/60 hover:bg-white'
-            }`}
-            title="Chat & Saluran Tim"
-          >
-            <Send className="w-4.5 h-4.5 shrink-0" />
-
-            {/* Badge for unread chats */}
-            {unreadChatCount > 0 && (
-              <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-[16px] px-1 rounded-full bg-[#C4562B] text-white text-[8px] font-bold flex items-center justify-center ring-2 ring-white shadow-2xs">
-                {unreadChatCount}
-              </span>
-            )}
-
-            {/* Hover Tooltip when NO flyout is open */}
-            {activeFlyout !== 'chat' && (
+        {/* TOP: Bruno PMO Brand Icon or Article Back Button */}
+        <div className="w-full flex flex-col items-center pt-[14px]">
+          {isArticleDetail ? (
+            <button
+              onClick={onBackFromArticleDetail}
+              className="relative group w-10 h-10 rounded-full flex items-center justify-center bg-white border border-[#D5E0ED] text-[#0B1528] shadow-2xs hover:shadow-xs hover:border-[#0B1528] hover:bg-[#F8FAFC] transition-all active:scale-95 cursor-pointer"
+              title="Kembali ke Daftar Artikel"
+            >
+              <ArrowLeft className="w-4.5 h-4.5 text-[#0B1528] group-hover:-translate-x-0.5 transition-transform" />
               <span className="absolute left-13 px-2.5 py-1 rounded-lg bg-[#0A2540] text-white text-[11px] font-medium whitespace-nowrap shadow-lg opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity z-50">
-                Chat & Saluran Tim
+                Kembali ke Daftar Artikel
               </span>
-            )}
-          </button>
+            </button>
+          ) : (
+            <button
+              onClick={() => handleNavigate('dash')}
+              className="relative group w-10 h-10 rounded-full flex items-center justify-center bg-[#0B1528] text-white shadow-xs hover:shadow-md transition-all active:scale-95 cursor-pointer border border-[#0B1528] hover:ring-2 hover:ring-[#1E6FD9]/40"
+              title="Bruno PMO (Home)"
+            >
+              <span className="font-black text-sm tracking-wider text-white">B</span>
+              <span className="absolute left-13 px-2.5 py-1 rounded-lg bg-[#0A2540] text-white text-[11px] font-medium whitespace-nowrap shadow-lg opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity z-50">
+                Bruno PMO
+              </span>
+            </button>
+          )}
+        </div>
+
+        {/* CENTER: All Menus Vertically Centered (Hidden during Article Detail view) */}
+        {!isArticleDetail && (
+          <div className="w-full flex-1 flex flex-col items-center justify-center gap-2 my-auto">
+            {/* 1. Primary Menus (Dashboard, Articles, Team) moved from Header */}
+            <div className="w-full flex flex-col items-center gap-2">
+              {primaryNavItems.map((item) => (
+                <button
+                  key={item.id}
+                  onClick={(e) => handleItemClick(item.id, e, !!item.hasSubmenu, item.action)}
+                  onMouseEnter={(e) => item.hasSubmenu && handleMouseEnterItem(item.id, e)}
+                  onMouseLeave={handleMouseLeaveItem}
+                  className={`relative group w-10 h-10 rounded-full flex items-center justify-center transition-all cursor-pointer shadow-2xs hover:shadow-xs active:scale-95 ${
+                    item.active || activeFlyout === item.id
+                      ? 'btn-3d-icon-active text-white font-medium'
+                      : 'bg-white border border-[#D5E0ED] text-[#4A5D70] hover:text-[#0A2540] hover:border-[#B4C6DC] hover:bg-white'
+                  }`}
+                  title={item.label}
+                >
+                  <item.icon className={`w-4.5 h-4.5 shrink-0 ${item.active || activeFlyout === item.id ? 'text-white' : ''}`} />
+
+                  {/* Hover Tooltip when NO flyout is open */}
+                  {activeFlyout !== item.id && (
+                    <span className="absolute left-13 px-2.5 py-1 rounded-lg bg-[#0A2540] text-white text-[11px] font-medium whitespace-nowrap shadow-lg opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity z-50">
+                      {item.label}
+                    </span>
+                  )}
+                </button>
+              ))}
+            </div>
+
+            {/* Subtle separator divider line */}
+            <div className="w-5 h-[1.5px] bg-[#D5E0ED] my-1 rounded-full shrink-0" />
+
+            {/* 2. Workspace & Operational Tools */}
+            <div className="w-full flex flex-col items-center gap-2">
+              {railItems.map((item) => (
+                <button
+                  key={item.id}
+                  onClick={(e) => handleItemClick(item.id, e, !!item.hasSubmenu, item.action)}
+                  onMouseEnter={(e) => item.hasSubmenu && handleMouseEnterItem(item.id, e)}
+                  onMouseLeave={handleMouseLeaveItem}
+                  className={`relative group w-10 h-10 rounded-full flex items-center justify-center transition-all cursor-pointer shadow-2xs hover:shadow-xs active:scale-95 ${
+                    item.active || activeFlyout === item.id
+                      ? 'btn-3d-icon-active text-white font-medium'
+                      : 'bg-white border border-[#D5E0ED] text-[#4A5D70] hover:text-[#0A2540] hover:border-[#B4C6DC] hover:bg-white'
+                  }`}
+                  title={item.label}
+                >
+                  <item.icon className={`w-4.5 h-4.5 shrink-0 ${item.active || activeFlyout === item.id ? 'text-white' : ''}`} />
+
+                  {/* Badge for counts */}
+                  {item.badge && item.badge > 0 && (
+                    <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-[16px] px-1 rounded-full bg-[#C4562B] text-white text-[8px] font-bold flex items-center justify-center ring-2 ring-white shadow-2xs">
+                      {item.badge}
+                    </span>
+                  )}
+
+                  {/* Hover Tooltip when NO flyout is open */}
+                  {activeFlyout !== item.id && (
+                    <span className="absolute left-13 px-2.5 py-1 rounded-lg bg-[#0A2540] text-white text-[11px] font-medium whitespace-nowrap shadow-lg opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity z-50">
+                      {item.label}
+                    </span>
+                  )}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* BOTTOM: Chat & Saluran Tim or Prev/Next Article Navigation Arrows */}
+        <div className="w-full flex flex-col items-center pt-2">
+          {isArticleDetail ? (
+            <div className="flex flex-col items-center gap-2">
+              {/* Back / Previous Article Arrow */}
+              <button
+                onClick={onPrevArticle}
+                disabled={!hasPrevArticle}
+                className={`relative group w-10 h-10 rounded-full flex items-center justify-center transition-all shadow-2xs active:scale-95 ${
+                  hasPrevArticle
+                    ? 'bg-white border border-[#D5E0ED] text-[#0B1528] hover:border-[#0B1528] hover:bg-[#F8FAFC] cursor-pointer'
+                    : 'bg-slate-100 border border-slate-200 text-slate-300 cursor-not-allowed opacity-50'
+                }`}
+                title={hasPrevArticle ? `Artikel Sebelumnya: ${prevArticleTitle || ''}` : 'Artikel Pertama'}
+              >
+                <ChevronLeft className="w-4.5 h-4.5 shrink-0" />
+                <span className="absolute left-13 px-2.5 py-1 rounded-lg bg-[#0A2540] text-white text-[11px] font-medium whitespace-nowrap shadow-lg opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity z-50">
+                  {hasPrevArticle ? `Sebelumnya: ${prevArticleTitle}` : 'Artikel Pertama'}
+                </span>
+              </button>
+
+              {/* Next Article Arrow */}
+              <button
+                onClick={onNextArticle}
+                disabled={!hasNextArticle}
+                className={`relative group w-10 h-10 rounded-full flex items-center justify-center transition-all shadow-2xs active:scale-95 ${
+                  hasNextArticle
+                    ? 'bg-white border border-[#D5E0ED] text-[#0B1528] hover:border-[#0B1528] hover:bg-[#F8FAFC] cursor-pointer'
+                    : 'bg-slate-100 border border-slate-200 text-slate-300 cursor-not-allowed opacity-50'
+                }`}
+                title={hasNextArticle ? `Artikel Berikutnya: ${nextArticleTitle || ''}` : 'Artikel Terakhir'}
+              >
+                <ChevronRight className="w-4.5 h-4.5 shrink-0" />
+                <span className="absolute left-13 px-2.5 py-1 rounded-lg bg-[#0A2540] text-white text-[11px] font-medium whitespace-nowrap shadow-lg opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity z-50">
+                  {hasNextArticle ? `Berikutnya: ${nextArticleTitle}` : 'Artikel Terakhir'}
+                </span>
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={(e) => handleItemClick('chat', e, true, () => handleNavigate('chat'))}
+              onMouseEnter={(e) => handleMouseEnterItem('chat', e)}
+              onMouseLeave={handleMouseLeaveItem}
+              className={`relative group w-10 h-10 rounded-full flex items-center justify-center transition-all cursor-pointer shadow-2xs hover:shadow-xs active:scale-95 ${
+                currentPage === 'chat' || activeFlyout === 'chat'
+                  ? 'bg-[#00A884] text-white shadow-sm ring-2 ring-[#00A884]/40 font-semibold'
+                  : 'bg-white border border-[#D5E0ED] text-[#4A5D70] hover:text-[#00A884] hover:border-[#00A884]/60 hover:bg-white'
+              }`}
+              title="Chat & Saluran Tim"
+            >
+              <Send className="w-4.5 h-4.5 shrink-0" />
+
+              {/* Badge for unread chats */}
+              {unreadChatCount > 0 && (
+                <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-[16px] px-1 rounded-full bg-[#C4562B] text-white text-[8px] font-bold flex items-center justify-center ring-2 ring-white shadow-2xs">
+                  {unreadChatCount}
+                </span>
+              )}
+
+              {/* Hover Tooltip when NO flyout is open */}
+              {activeFlyout !== 'chat' && (
+                <span className="absolute left-13 px-2.5 py-1 rounded-lg bg-[#0A2540] text-white text-[11px] font-medium whitespace-nowrap shadow-lg opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity z-50">
+                  Chat & Saluran Tim
+                </span>
+              )}
+            </button>
+          )}
         </div>
       </aside>
 
@@ -474,95 +545,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 </div>
               )}
 
-              {/* ------------------------------------------------------------- */}
-              {/* 1B. ARTICLES SUBMENU                                          */}
-              {/* ------------------------------------------------------------- */}
-              {activeFlyout === 'articles' && (
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between pb-2 border-b border-[#EAEFF5]">
-                    <div className="flex items-center gap-2">
-                      <BookOpen className="w-4 h-4 text-[#1E6FD9]" />
-                      <span className="text-xs font-bold text-[#0A2540]">Articles & Standar Tim</span>
-                    </div>
-                    <button 
-                      onClick={closeFlyout} 
-                      className="p-1 rounded-lg text-[#94A3B8] hover:text-[#0A2540] hover:bg-[#F4F8FD]"
-                    >
-                      <X className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
 
-                  <div className="space-y-1 pt-1">
-                    <button
-                      onClick={() => handleNavigate('articles')}
-                      className={`w-full flex items-center justify-between p-2 rounded-xl text-left text-xs font-semibold transition-colors ${
-                        currentPage === 'articles' || currentPage === 'artikel' ? 'bg-[#0A2540] text-white' : 'hover:bg-[#F4F8FD] text-[#0A2540]'
-                      }`}
-                    >
-                      <div className="flex items-center gap-2.5">
-                        <BookOpen className="w-3.5 h-3.5" />
-                        <span>Semua Artikel & SOP Tim</span>
-                      </div>
-                      {(currentPage === 'articles' || currentPage === 'artikel') && <Check className="w-3.5 h-3.5 text-white" />}
-                    </button>
-
-                    <button
-                      onClick={() => handleNavigate('docs')}
-                      className="w-full flex items-center justify-between p-2 rounded-xl text-left text-xs font-semibold hover:bg-[#F4F8FD] text-[#0A2540] transition-colors"
-                    >
-                      <div className="flex items-center gap-2.5">
-                        <FileText className="w-3.5 h-3.5 text-[#1E6FD9]" />
-                        <span>Dokumen Spesifikasi Proyek</span>
-                      </div>
-                    </button>
-                  </div>
-                </div>
-              )}
-
-              {/* ------------------------------------------------------------- */}
-              {/* 1C. TEAM SUBMENU                                              */}
-              {/* ------------------------------------------------------------- */}
-              {activeFlyout === 'team' && (
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between pb-2 border-b border-[#EAEFF5]">
-                    <div className="flex items-center gap-2">
-                      <Users className="w-4 h-4 text-[#1E6FD9]" />
-                      <span className="text-xs font-bold text-[#0A2540]">Anggota & Tim</span>
-                    </div>
-                    <button 
-                      onClick={closeFlyout} 
-                      className="p-1 rounded-lg text-[#94A3B8] hover:text-[#0A2540] hover:bg-[#F4F8FD]"
-                    >
-                      <X className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
-
-                  <div className="space-y-1 pt-1">
-                    <button
-                      onClick={() => handleNavigate('team')}
-                      className={`w-full flex items-center justify-between p-2 rounded-xl text-left text-xs font-semibold transition-colors ${
-                        currentPage === 'team' || currentPage === 'members' ? 'bg-[#0A2540] text-white' : 'hover:bg-[#F4F8FD] text-[#0A2540]'
-                      }`}
-                    >
-                      <div className="flex items-center gap-2.5">
-                        <Users className="w-3.5 h-3.5" />
-                        <span>Direktori Anggota Tim</span>
-                      </div>
-                      {(currentPage === 'team' || currentPage === 'members') && <Check className="w-3.5 h-3.5 text-white" />}
-                    </button>
-
-                    <button
-                      onClick={() => handleNavigate('roles')}
-                      className="w-full flex items-center justify-between p-2 rounded-xl text-left text-xs font-semibold hover:bg-[#F4F8FD] text-[#0A2540] transition-colors"
-                    >
-                      <div className="flex items-center gap-2.5">
-                        <Activity className="w-3.5 h-3.5 text-[#0F8E82]" />
-                        <span>9 Ruang Disiplin Teknis</span>
-                      </div>
-                    </button>
-                  </div>
-                </div>
-              )}
 
               {/* ------------------------------------------------------------- */}
               {/* 2. PROJECT / ROOMS SUBMENU (Requested by user)                 */}
@@ -972,16 +955,52 @@ export const Sidebar: React.FC<SidebarProps> = ({
             >
               <div className="space-y-4">
                 <div className="flex items-center justify-between pb-3 border-b border-[#D8E1EC]">
-                  <div className="flex items-center gap-2">
-                    <div className="w-7 h-7 rounded-lg bg-[#0B1528] text-white font-extrabold flex items-center justify-center text-xs shadow-xs">
-                      B
+                  {isArticleDetail ? (
+                    <button
+                      onClick={() => {
+                        onBackFromArticleDetail?.();
+                        onCloseMobile?.();
+                      }}
+                      className="flex items-center gap-2 px-2 py-1 -ml-1 text-[#0A2540] font-semibold text-xs hover:bg-white rounded-lg transition-colors cursor-pointer"
+                    >
+                      <ArrowLeft className="w-4 h-4 text-[#0A2540]" />
+                      <span>Kembali ke Artikel</span>
+                    </button>
+                  ) : (
+                    <div className="flex items-center gap-2">
+                      <div className="w-7 h-7 rounded-lg bg-[#0B1528] text-white font-extrabold flex items-center justify-center text-xs shadow-xs">
+                        B
+                      </div>
+                      <span className="font-extrabold text-sm text-[#0A2540]">Bruno PMO</span>
                     </div>
-                    <span className="font-extrabold text-sm text-[#0A2540]">Bruno PMO</span>
-                  </div>
+                  )}
                   <button onClick={onCloseMobile} className="p-1.5 rounded-lg text-[#5B7288] hover:bg-white">
                     <X className="w-5 h-5" />
                   </button>
                 </div>
+
+                {/* Mobile Article Detail Quick Prev / Next Navigator */}
+                {isArticleDetail && (
+                  <div className="p-2 rounded-xl bg-white border border-[#CBD7E6] flex items-center justify-between gap-2 shadow-2xs">
+                    <button
+                      onClick={() => onPrevArticle?.()}
+                      disabled={!hasPrevArticle}
+                      className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-[#F8FAFC] border border-[#E2E8F0] text-[#0B1528] disabled:opacity-40 cursor-pointer disabled:cursor-not-allowed"
+                    >
+                      <ChevronLeft className="w-3.5 h-3.5" />
+                      <span>Sebelum</span>
+                    </button>
+                    <span className="text-[11px] font-medium text-[#64748B]">Navigasi Detail</span>
+                    <button
+                      onClick={() => onNextArticle?.()}
+                      disabled={!hasNextArticle}
+                      className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-[#F8FAFC] border border-[#E2E8F0] text-[#0B1528] disabled:opacity-40 cursor-pointer disabled:cursor-not-allowed"
+                    >
+                      <span>Berikut</span>
+                      <ChevronRight className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                )}
 
                 {/* The 3 Main Navigation Pills (Dashboard, Articles, Team) */}
                 <div className="bg-[#DFE7F1] p-1 rounded-full border border-[#CBD7E6] flex items-center gap-1 shadow-inner">

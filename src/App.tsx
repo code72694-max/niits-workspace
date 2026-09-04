@@ -14,7 +14,8 @@ import {
   INITIAL_ROOMS, 
   INITIAL_NOTIFICATIONS, 
   CURRENT_USER, 
-  ROLES_CONFIG 
+  ROLES_CONFIG,
+  INITIAL_ARTICLES
 } from './data/mockData';
 
 // Layout components
@@ -67,6 +68,35 @@ export default function App() {
   const [isNewTaskModalOpen, setIsNewTaskModalOpen] = useState(false);
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
+
+  // Article Navigation State (for Detail View in Sidebar & ArticlesView)
+  const [selectedArticleId, setSelectedArticleId] = useState<string>('a1');
+  const [articleSubView, setArticleSubView] = useState<'daftar' | 'detail' | 'tulis' | 'ekspor'>('daftar');
+
+  const isArticleDetail = (currentPage === 'articles' || currentPage === 'artikel') && articleSubView === 'detail';
+
+  const currentArticleIndex = INITIAL_ARTICLES.findIndex(a => a.id === selectedArticleId);
+  const safeArticleIndex = currentArticleIndex >= 0 ? currentArticleIndex : 0;
+  const hasPrevArticle = safeArticleIndex > 0;
+  const hasNextArticle = safeArticleIndex < INITIAL_ARTICLES.length - 1;
+  const prevArticleTitle = hasPrevArticle ? INITIAL_ARTICLES[safeArticleIndex - 1]?.judul : undefined;
+  const nextArticleTitle = hasNextArticle ? INITIAL_ARTICLES[safeArticleIndex + 1]?.judul : undefined;
+
+  const handlePrevArticle = () => {
+    if (hasPrevArticle) {
+      setSelectedArticleId(INITIAL_ARTICLES[safeArticleIndex - 1].id);
+    }
+  };
+
+  const handleNextArticle = () => {
+    if (hasNextArticle) {
+      setSelectedArticleId(INITIAL_ARTICLES[safeArticleIndex + 1].id);
+    }
+  };
+
+  const handleBackFromArticleDetail = () => {
+    setArticleSubView('daftar');
+  };
 
   // Micro-toast alerts
   const [toasts, setToasts] = useState<Toast[]>([]);
@@ -267,7 +297,12 @@ export default function App() {
       case 'artikel':
       case 'articles':
         return (
-          <ArticlesView />
+          <ArticlesView
+            subView={articleSubView}
+            onSubViewChange={setArticleSubView}
+            selectedArticleId={selectedArticleId}
+            onSelectArticleId={setSelectedArticleId}
+          />
         );
       case 'roles':
         return (
@@ -421,7 +456,7 @@ export default function App() {
 
       {/* Body container: Full height, sidebar at left and workspace on right */}
       <div className="flex-1 w-full min-h-0 overflow-hidden flex flex-col">
-        <div className="flex-1 flex flex-row h-full min-w-0 w-full max-w-[1720px] mx-auto px-3 sm:px-4 lg:px-5 pt-6 sm:pt-7 pb-5 sm:pb-6">
+        <div className="flex-1 flex flex-row h-full min-w-0 w-full max-w-[1720px] mx-auto px-4 sm:px-5 lg:px-6 pt-5 sm:pt-6 pb-4 sm:pb-5 gap-4 sm:gap-5 lg:gap-6">
           {/* Sidebar Navigation: Floating circular buttons at left */}
           <Sidebar
             currentPage={currentPage}
@@ -432,10 +467,18 @@ export default function App() {
             onOpenNewTask={() => setIsNewTaskModalOpen(true)}
             isMobileOpen={isMobileSidebarOpen}
             onCloseMobile={() => setIsMobileSidebarOpen(false)}
+            isArticleDetail={isArticleDetail}
+            onBackFromArticleDetail={handleBackFromArticleDetail}
+            onPrevArticle={handlePrevArticle}
+            onNextArticle={handleNextArticle}
+            hasPrevArticle={hasPrevArticle}
+            hasNextArticle={hasNextArticle}
+            prevArticleTitle={prevArticleTitle}
+            nextArticleTitle={nextArticleTitle}
           />
 
           {/* Main Workspace Layout */}
-          <div className={`flex-1 flex flex-col h-full min-w-0 ${(currentPage === 'dash' || currentPage === 'chat') ? 'overflow-hidden' : 'overflow-y-auto'} overflow-x-hidden pl-3 sm:pl-4`}>
+          <div className={`flex-1 flex flex-col h-full min-w-0 ${(currentPage === 'dash' || currentPage === 'chat' || currentPage === 'artikel' || currentPage === 'articles') ? 'overflow-visible' : 'overflow-y-auto overflow-x-hidden'}`}>
             {/* View Content Area with Motion Fade Transition */}
             <main className="flex-1 w-full flex flex-col min-h-0">
               <AnimatePresence mode="wait">
