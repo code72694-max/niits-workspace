@@ -15,6 +15,7 @@ import {
   Briefcase, 
   FolderGit2, 
   ChevronRight, 
+  ChevronDown,
   X, 
   ArrowLeft, 
   Layers, 
@@ -49,6 +50,12 @@ export const MembersView: React.FC<MembersViewProps> = ({
   const [selectedMember, setSelectedMember] = useState<TeamMemberProfile | null>(null);
   const [copiedEmail, setCopiedEmail] = useState(false);
   const [skillFilter, setSkillFilter] = useState<string>('all');
+  const [isOtherDropdownOpen, setIsOtherDropdownOpen] = useState(false);
+
+  // Primary roles shown as direct filter pills: UI/UX, FE, BE, QA, DevOps
+  const PRIMARY_ROLE_KEYS: RoleKey[] = ['ux', 'fe', 'be', 'qa', 'devops'];
+  const OTHER_ROLE_KEYS: RoleKey[] = ROLE_KEYS.filter(rk => !PRIMARY_ROLE_KEYS.includes(rk));
+  const isOtherSelected = OTHER_ROLE_KEYS.includes(selectedDiscipline as RoleKey);
 
   // Filter & sort members
   const filteredMembers = useMemo(() => {
@@ -98,7 +105,7 @@ export const MembersView: React.FC<MembersViewProps> = ({
   return (
     <div className="space-y-5">
       {/* Clean & Simple Filter Toolbar */}
-      <div className="bg-[#F4F8FA] border border-[#E2EAF3] rounded-2xl p-2.5 sm:p-3 shadow-xs">
+      <div className="bg-[#F4F8FA] border border-[#E2EAF3] rounded-2xl p-2.5 sm:p-3">
         <div className="flex flex-col lg:flex-row items-center justify-between gap-2.5">
           {/* Search Bar */}
           <div className="relative w-full lg:w-72 shrink-0">
@@ -108,7 +115,7 @@ export const MembersView: React.FC<MembersViewProps> = ({
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Cari anggota atau peran..."
-              className="w-full pl-9 pr-8 py-2 rounded-full border border-[#E2EAF3] bg-white text-xs text-[#0F172A] placeholder-[#94A3B8] shadow-xs focus:outline-none focus:ring-2 focus:ring-[#1E6FD9]/20 focus:border-[#1E6FD9]"
+              className="w-full pl-9 pr-8 py-2 rounded-full border border-[#E2EAF3] bg-white text-xs text-[#0F172A] placeholder-[#94A3B8] focus:outline-none focus:ring-2 focus:ring-[#1E6FD9]/20 focus:border-[#1E6FD9]"
             />
             {searchQuery && (
               <button
@@ -120,19 +127,25 @@ export const MembersView: React.FC<MembersViewProps> = ({
             )}
           </div>
 
-          {/* Discipline Filter Pills */}
+          {/* Discipline Filter Pills (UI/UX, FE, BE, QA, DevOps, and Dropdown for others) */}
           <div className="flex items-center gap-1.5 w-full lg:w-auto overflow-x-auto py-0.5 scrollbar-none [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+            {/* All */}
             <button
-              onClick={() => setSelectedDiscipline('all')}
-              className={`px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all whitespace-nowrap shadow-xs ${
+              onClick={() => {
+                setSelectedDiscipline('all');
+                setIsOtherDropdownOpen(false);
+              }}
+              className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all whitespace-nowrap cursor-pointer ${
                 selectedDiscipline === 'all'
-                  ? 'bg-white text-[#0A2540] shadow-xs ring-1 ring-[#CBD5E1]'
+                  ? 'bg-white text-[#0A2540] ring-1 ring-[#CBD5E1]'
                   : 'bg-white/80 text-[#5B7288] hover:text-[#0A2540] hover:bg-white'
               }`}
             >
               All ({TEAM_MEMBERS.length})
             </button>
-            {ROLE_KEYS.map((rk) => {
+
+            {/* Primary Roles: UI/UX, FE, BE, QA, DevOps */}
+            {PRIMARY_ROLE_KEYS.map((rk) => {
               const conf = ROLES_CONFIG[rk];
               const count = TEAM_MEMBERS.filter(m => m.discipline === rk).length;
               if (count === 0) return null;
@@ -140,22 +153,78 @@ export const MembersView: React.FC<MembersViewProps> = ({
               return (
                 <button
                   key={rk}
-                  onClick={() => setSelectedDiscipline(rk)}
-                  className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all whitespace-nowrap shadow-xs flex items-center gap-1.5 ${
+                  onClick={() => {
+                    setSelectedDiscipline(rk);
+                    setIsOtherDropdownOpen(false);
+                  }}
+                  className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all whitespace-nowrap flex items-center gap-1 cursor-pointer ${
                     isSelected
-                      ? 'bg-white text-[#0A2540] shadow-xs ring-1 ring-[#CBD5E1]'
+                      ? 'bg-white text-[#0A2540] ring-1 ring-[#CBD5E1]'
                       : 'bg-white/80 text-[#5B7288] hover:text-[#0A2540] hover:bg-white'
                   }`}
                 >
-                  <span 
-                    className="w-2 h-2 rounded-full shrink-0" 
-                    style={{ backgroundColor: conf.color }} 
-                  />
                   <span>{conf.singkat}</span>
-                  <span className="text-[10px] opacity-75">({count})</span>
+                  <span className="text-[10px] text-[#64748B]">({count})</span>
                 </button>
               );
             })}
+
+            {/* Dropdown for other roles (Bisnis, Security, etc.) without colored marks */}
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => setIsOtherDropdownOpen(!isOtherDropdownOpen)}
+                className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all whitespace-nowrap flex items-center gap-1.5 cursor-pointer ${
+                  isOtherSelected
+                    ? 'bg-white text-[#0A2540] ring-1 ring-[#CBD5E1]'
+                    : 'bg-white/80 text-[#5B7288] hover:text-[#0A2540] hover:bg-white'
+                }`}
+              >
+                <span>
+                  {isOtherSelected 
+                    ? ROLES_CONFIG[selectedDiscipline as RoleKey]?.singkat || 'Lainnya'
+                    : 'Lainnya'}
+                </span>
+                {isOtherSelected && (
+                  <span className="text-[10px] text-[#64748B]">
+                    ({TEAM_MEMBERS.filter(m => m.discipline === selectedDiscipline).length})
+                  </span>
+                )}
+                <ChevronDown className={`w-3.5 h-3.5 text-[#64748B] transition-transform ${isOtherDropdownOpen ? 'rotate-180' : ''}`} />
+              </button>
+
+              {isOtherDropdownOpen && (
+                <>
+                  <div
+                    className="fixed inset-0 z-20"
+                    onClick={() => setIsOtherDropdownOpen(false)}
+                  />
+                  <div className="absolute left-0 mt-1.5 w-40 bg-white border border-[#E2EAF3] rounded-xl shadow-lg z-30 py-1 overflow-hidden">
+                    {OTHER_ROLE_KEYS.map((rk) => {
+                      const conf = ROLES_CONFIG[rk];
+                      const count = TEAM_MEMBERS.filter(m => m.discipline === rk).length;
+                      const isSelected = selectedDiscipline === rk;
+                      return (
+                        <button
+                          key={rk}
+                          type="button"
+                          onClick={() => {
+                            setSelectedDiscipline(rk);
+                            setIsOtherDropdownOpen(false);
+                          }}
+                          className={`w-full px-3 py-2 text-left text-xs font-medium flex items-center justify-between hover:bg-[#F8FAFC] transition-colors cursor-pointer ${
+                            isSelected ? 'text-[#0A2540] font-semibold bg-[#F1F5F9]' : 'text-[#475569]'
+                          }`}
+                        >
+                          <span>{conf.label || conf.singkat}</span>
+                          <span className="text-[10px] text-[#64748B]">({count})</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </>
+              )}
+            </div>
           </div>
 
           {/* Sort Dropdown */}
@@ -164,7 +233,7 @@ export const MembersView: React.FC<MembersViewProps> = ({
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value as any)}
-              className="px-3 py-1.5 rounded-full text-xs font-medium border border-[#E2EAF3] bg-white text-[#0F172A] shadow-xs focus:outline-none focus:border-[#1E6FD9] cursor-pointer"
+              className="px-3 py-1.5 rounded-full text-xs font-medium border border-[#E2EAF3] bg-white text-[#0F172A] focus:outline-none focus:border-[#1E6FD9] cursor-pointer"
             >
               <option value="name">Nama (A - Z)</option>
               <option value="onTime">Ketepatan Waktu Tertinggi</option>
@@ -198,7 +267,7 @@ export const MembersView: React.FC<MembersViewProps> = ({
             </button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3.5 sm:gap-4">
             {filteredMembers.map((member) => {
               const roleConfig = ROLES_CONFIG[member.discipline];
               return (
