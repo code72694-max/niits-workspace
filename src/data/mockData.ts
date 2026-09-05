@@ -858,6 +858,31 @@ export const DOC_TEMPLATES: DocTemplate[] = [
 
 export const INITIAL_ARTICLES: Article[] = [
   {
+    id: "a0",
+    judul: "Personal Email Assistant",
+    ringkas: "Your AI helper for reading, organizing, and responding to emails.",
+    penulis: "u2",
+    waktu: "5 days ago",
+    baca: 4,
+    like: 42,
+    sukaSaya: true,
+    komentar: 8,
+    label: ["personal", "marketing"],
+    pin: true,
+    tipe: "AI Assistant",
+    status: "terbit",
+    statusText: "Active",
+    dilihat: 320,
+    coverImage: "https://images.unsplash.com/photo-1513151233558-d860c5398176?auto=format&fit=crop&w=800&q=80",
+    collaborators: [
+      "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=256&q=80",
+      "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=256&q=80",
+      "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=256&q=80"
+    ],
+    tools: ["gmail", "chatgpt", "todoist"],
+    medium: { status: "terbit", url: "medium.com/@agro/personal-email-assistant", waktu: "5 days ago", claps: 85 }
+  },
+  {
     id: "a1",
     judul: "Tata cara rilis ke produksi",
     ringkas: "Urutan wajib dari merge sampai verifikasi pasca-rilis, termasuk kapan harus rollback.",
@@ -871,7 +896,15 @@ export const INITIAL_ARTICLES: Article[] = [
     pin: true,
     tipe: "Tata cara",
     status: "terbit",
+    statusText: "Active",
     dilihat: 148,
+    coverImage: "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=800&q=80",
+    collaborators: [
+      "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=256&q=80",
+      "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=256&q=80",
+      "https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&w=256&q=80"
+    ],
+    tools: ["github", "slack", "medium"],
     medium: { status: "terbit", url: "medium.com/@harykurniawan/tata-cara-rilis", waktu: "2 hari lalu", claps: 62 }
   },
   {
@@ -887,7 +920,15 @@ export const INITIAL_ARTICLES: Article[] = [
     label: ["sec", "fe"],
     tipe: "Penjelasan",
     status: "terbit",
+    statusText: "Active",
     dilihat: 213,
+    coverImage: "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&w=800&q=80",
+    collaborators: [
+      "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=256&q=80",
+      "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=256&q=80",
+      "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=256&q=80"
+    ],
+    tools: ["chatgpt", "github", "notion"],
     medium: { status: "draft", url: null, waktu: "disimpan 3 hari lalu", claps: 0 }
   },
   {
@@ -903,7 +944,15 @@ export const INITIAL_ARTICLES: Article[] = [
     label: ["onboard", "devops", "be"],
     tipe: "Tata cara",
     status: "terbit",
+    statusText: "Active",
     dilihat: 182,
+    coverImage: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=800&q=80",
+    collaborators: [
+      "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=256&q=80",
+      "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=256&q=80",
+      "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=256&q=80"
+    ],
+    tools: ["notion", "github", "slack"],
     medium: null
   },
   {
@@ -919,7 +968,15 @@ export const INITIAL_ARTICLES: Article[] = [
     label: ["data", "be"],
     tipe: "Panduan",
     status: "terbit",
+    statusText: "Active",
     dilihat: 164,
+    coverImage: "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&w=800&q=80",
+    collaborators: [
+      "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=256&q=80",
+      "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=256&q=80",
+      "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=256&q=80"
+    ],
+    tools: ["github", "medium", "chatgpt"],
     medium: { status: "draft", url: null, waktu: "disimpan 3 hari lalu", claps: 0 }
   },
   {
@@ -935,7 +992,15 @@ export const INITIAL_ARTICLES: Article[] = [
     label: ["ux", "sop"],
     tipe: "Checklist",
     status: "terbit",
+    statusText: "Active",
     dilihat: 110,
+    coverImage: "https://images.unsplash.com/photo-1507238691740-187a5b1d37b8?auto=format&fit=crop&w=800&q=80",
+    collaborators: [
+      "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=256&q=80",
+      "https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&w=256&q=80",
+      "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=256&q=80"
+    ],
+    tools: ["figma", "notion", "todoist"],
     medium: null
   },
   {
@@ -951,7 +1016,15 @@ export const INITIAL_ARTICLES: Article[] = [
     label: ["qa"],
     tipe: "Panduan",
     status: "terbit",
+    statusText: "Active",
     dilihat: 95,
+    coverImage: "https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=800&q=80",
+    collaborators: [
+      "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=256&q=80",
+      "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=256&q=80",
+      "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=256&q=80"
+    ],
+    tools: ["chatgpt", "github", "slack"],
     medium: null
   },
   {
@@ -967,7 +1040,15 @@ export const INITIAL_ARTICLES: Article[] = [
     label: ["ba", "sop"],
     tipe: "Panduan",
     status: "terbit",
+    statusText: "Active",
     dilihat: 87,
+    coverImage: "https://images.unsplash.com/photo-1519389950473-47ba0277781c?auto=format&fit=crop&w=800&q=80",
+    collaborators: [
+      "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=256&q=80",
+      "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=256&q=80",
+      "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=256&q=80"
+    ],
+    tools: ["notion", "slack", "todoist"],
     medium: null
   },
   {
@@ -983,7 +1064,111 @@ export const INITIAL_ARTICLES: Article[] = [
     label: ["be", "data", "sec"],
     tipe: "Postmortem",
     status: "terbit",
+    statusText: "Active",
     dilihat: 290,
+    coverImage: "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?auto=format&fit=crop&w=800&q=80",
+    collaborators: [
+      "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=256&q=80",
+      "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=256&q=80",
+      "https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&w=256&q=80"
+    ],
+    tools: ["slack", "github", "notion"],
+    medium: null
+  },
+  {
+    id: "a9",
+    judul: "Design System AGRO: Panduan Token Warna & Tipografi",
+    ringkas: "Standar token visual, skala font, dan library komponen Figma untuk konsistensi seluruh tim.",
+    penulis: "u2",
+    waktu: "4 hari lalu",
+    baca: 5,
+    like: 38,
+    sukaSaya: true,
+    komentar: 11,
+    label: ["ux", "fe"],
+    tipe: "Panduan",
+    status: "terbit",
+    statusText: "Active",
+    dilihat: 215,
+    coverImage: "https://images.unsplash.com/photo-1507238691740-187a5b1d37b8?auto=format&fit=crop&w=800&q=80",
+    collaborators: [
+      "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=256&q=80",
+      "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=256&q=80",
+      "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=256&q=80"
+    ],
+    tools: ["figma", "notion", "slack"],
+    medium: null
+  },
+  {
+    id: "a10",
+    judul: "Micro-interactions & UX Delight pada Alur Checkout",
+    ringkas: "Eksperimen animasi haptic, skeleton loader, dan pengurangan rasio drop-off pada keranjang belanja.",
+    penulis: "u4",
+    waktu: "1 minggu lalu",
+    baca: 6,
+    like: 29,
+    sukaSaya: false,
+    komentar: 6,
+    label: ["ux"],
+    tipe: "Studi Kasus",
+    status: "terbit",
+    statusText: "Active",
+    dilihat: 178,
+    coverImage: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=800&q=80",
+    collaborators: [
+      "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=256&q=80",
+      "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=256&q=80",
+      "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=256&q=80"
+    ],
+    tools: ["figma", "chatgpt", "todoist"],
+    medium: null
+  },
+  {
+    id: "a11",
+    judul: "CI/CD Pipeline Otomatis dengan GitHub Actions & Docker",
+    ringkas: "Strategi build caching multi-stage, automated linting, dan zero-downtime rolling update.",
+    penulis: "u1",
+    waktu: "6 hari lalu",
+    baca: 7,
+    like: 45,
+    sukaSaya: true,
+    komentar: 14,
+    label: ["devops", "be"],
+    tipe: "Tata cara",
+    status: "terbit",
+    statusText: "Active",
+    dilihat: 310,
+    coverImage: "https://images.unsplash.com/photo-1618401471353-b98afee0b2eb?auto=format&fit=crop&w=800&q=80",
+    collaborators: [
+      "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=256&q=80",
+      "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=256&q=80",
+      "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=256&q=80"
+    ],
+    tools: ["github", "slack", "todoist"],
+    medium: null
+  },
+  {
+    id: "a12",
+    judul: "Strategi Mock Data & E2E Testing dengan Playwright",
+    ringkas: "Mengurangi tes yang rapuh (flaky) sebesar 40% dan mengisolasi dependensi API backend staging.",
+    penulis: "u3",
+    waktu: "2 minggu lalu",
+    baca: 5,
+    like: 22,
+    sukaSaya: false,
+    komentar: 4,
+    label: ["qa", "fe"],
+    tipe: "Panduan",
+    status: "terbit",
+    statusText: "Active",
+    dilihat: 165,
+    coverImage: "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=800&q=80",
+    collaborators: [
+      "https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&w=256&q=80",
+      "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=256&q=80",
+      "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=256&q=80"
+    ],
+    tools: ["github", "notion", "slack"],
     medium: null
   }
 ];

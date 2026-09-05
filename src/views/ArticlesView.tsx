@@ -22,13 +22,60 @@ import {
   X,
   BookOpen,
   ArrowUpRight,
-  Send
+  Send,
+  Sparkles,
+  Palette,
+  Database,
+  Server,
+  ShieldCheck,
+  CheckSquare,
+  Briefcase,
+  Bot,
+  Layers
 } from 'lucide-react';
 import { Article } from '../types';
 import { INITIAL_ARTICLES, ARTICLE_LABELS, USERS_MAP, CURRENT_USER } from '../data/mockData';
+import { ArticleCard } from '../components/ArticleCard';
 
 // Content generators for authentic article reading experience
 const getArticleBody = (art: Article) => {
+  if (art.id === 'a0') {
+    return (
+      <>
+        <div className="p-4.5 rounded-2xl bg-[#F8FAFC] border border-[#E2E8F0] space-y-2">
+          <span className="text-xs font-semibold text-[#0B1528] tracking-wide uppercase">AI Automation & Email Workflow</span>
+          <p className="text-xs sm:text-sm text-[#475569] leading-relaxed">
+            Personal Email Assistant connects your Gmail inbox with ChatGPT logic and Todoist task triage, automatically filtering high-priority client inquiries, generating drafts, and maintaining your daily inbox zero.
+          </p>
+        </div>
+
+        <h3 className="text-base sm:text-lg font-semibold text-[#0B1528] pt-2">1. Core Integrations & Architecture</h3>
+        <p className="text-sm text-[#475569] leading-relaxed">
+          The assistant runs on three synchronized connectors:
+        </p>
+        <ul className="space-y-2 text-sm text-[#475569] pl-1">
+          <li className="flex items-start gap-2.5">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#EA4335] mt-2 shrink-0" />
+            <span><strong>Gmail Push Webhook:</strong> Ingests inbound threads within 200ms using Pub/Sub events.</span>
+          </li>
+          <li className="flex items-start gap-2.5">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#10A37F] mt-2 shrink-0" />
+            <span><strong>OpenAI Categorization:</strong> Analyzes intent, urgency, and extracts actionable todo items.</span>
+          </li>
+          <li className="flex items-start gap-2.5">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#E44233] mt-2 shrink-0" />
+            <span><strong>Todoist Sync:</strong> Creates due-dated tasks with original email links for zero-friction followups.</span>
+          </li>
+        </ul>
+
+        <h3 className="text-base sm:text-lg font-semibold text-[#0B1528] pt-2">2. Safety Guardrails</h3>
+        <p className="text-sm text-[#475569] leading-relaxed">
+          Outbound emails are never sent automatically without human-in-the-loop review. Drafts are placed in the &ldquo;Pending Review&rdquo; label inside Gmail for one-tap approval.
+        </p>
+      </>
+    );
+  }
+
   if (art.id === 'a1') {
     return (
       <>
@@ -151,6 +198,220 @@ const getArticleBody = (art: Article) => {
   );
 };
 
+// Definition of topics for categorized side-by-side display
+interface TopicGroupDef {
+  id: string;
+  title: string;
+  labels: string[];
+  icon: React.ComponentType<{ className?: string }>;
+  iconColor: string;
+}
+
+const TOPIC_SECTIONS: TopicGroupDef[] = [
+  {
+    id: 'ui-ux',
+    title: 'UI / UX & Desain Antarmuka',
+    labels: ['ux'],
+    icon: Palette,
+    iconColor: 'text-[#D9488B]'
+  },
+  {
+    id: 'frontend-sec',
+    title: 'Frontend & Keamanan Web',
+    labels: ['fe', 'sec'],
+    icon: ShieldCheck,
+    iconColor: 'text-[#1E6FD9]'
+  },
+  {
+    id: 'backend-data',
+    title: 'Backend, Data & Database',
+    labels: ['be', 'data'],
+    icon: Database,
+    iconColor: 'text-[#0F8E82]'
+  },
+  {
+    id: 'devops-infra',
+    title: 'DevOps & Rilis ke Produksi',
+    labels: ['devops', 'onboard'],
+    icon: Server,
+    iconColor: 'text-[#4B5D75]'
+  },
+  {
+    id: 'qa-test',
+    title: 'QA & Pengujian Kualitas',
+    labels: ['qa'],
+    icon: CheckSquare,
+    iconColor: 'text-[#B7791F]'
+  },
+  {
+    id: 'sop-ba',
+    title: 'SOP & Analisis Bisnis (BA)',
+    labels: ['ba', 'sop'],
+    icon: Briefcase,
+    iconColor: 'text-[#7A5AF8]'
+  },
+  {
+    id: 'ai-automation',
+    title: 'AI & Asisten Otomasi',
+    labels: ['personal', 'marketing'],
+    icon: Bot,
+    iconColor: 'text-[#EA4335]'
+  }
+];
+
+// Reusable horizontal scrollable section with sub-heading and navigation arrows
+interface ArticleHorizontalSectionProps {
+  title: string;
+  badge?: string;
+  badgeType?: 'primary' | 'amber' | 'neutral';
+  icon?: React.ComponentType<{ className?: string }>;
+  iconColor?: string;
+  articles: Article[];
+  selectedArticleId: string;
+  bookmarkedIds: string[];
+  onSelectArticle: (id: string) => void;
+  onToggleLike: (id: string, e?: React.MouseEvent) => void;
+  onToggleBookmark: (id: string, e?: React.MouseEvent) => void;
+  onExportMedium: (article: Article) => void;
+}
+
+const ArticleHorizontalSection: React.FC<ArticleHorizontalSectionProps> = ({
+  title,
+  badge,
+  badgeType = 'neutral',
+  icon: Icon,
+  iconColor = 'text-[#1E6FD9]',
+  articles,
+  selectedArticleId,
+  bookmarkedIds,
+  onSelectArticle,
+  onToggleLike,
+  onToggleBookmark,
+  onExportMedium,
+}) => {
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(false);
+
+  const checkScroll = () => {
+    if (scrollRef.current) {
+      const { scrollLeft, scrollWidth, clientWidth } = scrollRef.current;
+      setCanScrollLeft(scrollLeft > 12);
+      setCanScrollRight(scrollLeft + clientWidth < scrollWidth - 12);
+    }
+  };
+
+  useEffect(() => {
+    checkScroll();
+    const el = scrollRef.current;
+    if (el) {
+      el.addEventListener('scroll', checkScroll);
+      window.addEventListener('resize', checkScroll);
+      return () => {
+        el.removeEventListener('scroll', checkScroll);
+        window.removeEventListener('resize', checkScroll);
+      };
+    }
+  }, [articles]);
+
+  const scroll = (direction: 'left' | 'right') => {
+    if (scrollRef.current) {
+      const scrollAmount = 330;
+      scrollRef.current.scrollBy({
+        left: direction === 'left' ? -scrollAmount : scrollAmount,
+        behavior: 'smooth'
+      });
+    }
+  };
+
+  if (articles.length === 0) return null;
+
+  return (
+    <div className="space-y-3">
+      {/* Title row: Icon + Title + Controls */}
+      <div className="flex items-center justify-between gap-3 px-1">
+        <div className="flex items-center gap-2.5 min-w-0">
+          {Icon && (
+            <div className={`w-8 h-8 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0]/80 flex items-center justify-center shrink-0 ${iconColor}`}>
+              <Icon className="w-4 h-4" />
+            </div>
+          )}
+          <div className="min-w-0">
+            <div className="flex items-center gap-2 flex-wrap">
+              <h3 className="text-[15px] sm:text-[16px] font-bold text-[#0B1528] tracking-tight">
+                {title}
+              </h3>
+              {badge && (
+                <span className={`px-2.5 py-0.5 rounded-full text-[11px] font-semibold shrink-0 ${
+                  badgeType === 'amber' 
+                    ? 'bg-amber-50 text-amber-700 border border-amber-200/60'
+                    : badgeType === 'primary'
+                    ? 'bg-blue-50 text-[#1E6FD9] border border-blue-200/60'
+                    : 'bg-slate-100 text-slate-600 border border-slate-200/60'
+                }`}>
+                  {badge}
+                </span>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Scroll Left & Right Navigation Arrows */}
+        <div className="flex items-center gap-1.5 shrink-0">
+          <button
+            type="button"
+            onClick={() => scroll('left')}
+            disabled={!canScrollLeft}
+            aria-label="Scroll ke kiri"
+            className={`w-7 h-7 rounded-full border border-[#E2E8F0] flex items-center justify-center transition-colors cursor-pointer ${
+              canScrollLeft 
+                ? 'bg-white text-slate-700 hover:bg-slate-50 shadow-2xs hover:border-slate-300' 
+                : 'bg-slate-50/70 text-slate-300 border-slate-100 cursor-not-allowed'
+            }`}
+          >
+            <ChevronLeft className="w-3.5 h-3.5" />
+          </button>
+          <button
+            type="button"
+            onClick={() => scroll('right')}
+            disabled={!canScrollRight}
+            aria-label="Scroll ke kanan"
+            className={`w-7 h-7 rounded-full border border-[#E2E8F0] flex items-center justify-center transition-colors cursor-pointer ${
+              canScrollRight 
+                ? 'bg-white text-slate-700 hover:bg-slate-50 shadow-2xs hover:border-slate-300' 
+                : 'bg-slate-50/70 text-slate-300 border-slate-100 cursor-not-allowed'
+            }`}
+          >
+            <ChevronRight className="w-3.5 h-3.5" />
+          </button>
+        </div>
+      </div>
+
+      {/* Horizontal Scrollable Row of Cards */}
+      <div 
+        ref={scrollRef}
+        className="flex items-stretch gap-4 overflow-x-auto pb-3 pt-1 scroll-smooth snap-x snap-mandatory scrollbar-none"
+        style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+      >
+        {articles.map((art) => (
+          <div key={art.id} className="w-[285px] sm:w-[305px] md:w-[320px] shrink-0 snap-start flex">
+            <ArticleCard
+              article={art}
+              isSelected={selectedArticleId === art.id}
+              isBookmarked={bookmarkedIds.includes(art.id)}
+              onClick={() => onSelectArticle(art.id)}
+              onToggleLike={onToggleLike}
+              onToggleBookmark={onToggleBookmark}
+              onExportMedium={onExportMedium}
+              className="w-full"
+            />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
 export interface ArticlesViewProps {
   subView?: 'daftar' | 'detail' | 'tulis' | 'ekspor';
   onSubViewChange?: (subView: 'daftar' | 'detail' | 'tulis' | 'ekspor') => void;
@@ -253,6 +514,11 @@ export const ArticlesView: React.FC<ArticlesViewProps> = ({
     navigator.clipboard?.writeText(window.location.href);
     setCopyFeedback(true);
     setTimeout(() => setCopyFeedback(false), 2000);
+  };
+
+  const handleExportToMedium = (article: Article) => {
+    setSelectedArticleId(article.id);
+    setSubView('ekspor');
   };
 
   const selectedArticle = articles.find(a => a.id === selectedArticleId) || articles[0];
@@ -358,13 +624,13 @@ export const ArticlesView: React.FC<ArticlesViewProps> = ({
                   </button>
                 </div>
 
-                {/* Action Buttons */}
+                {/* Action Buttons - Primary Color Matching Active Sidebar */}
                 <button
                   onClick={() => setSubView('tulis')}
-                  className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold bg-[#0B1528] text-white hover:bg-[#1E293B] transition-colors cursor-pointer shadow-xs"
+                  className="btn-3d-primary flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold cursor-pointer shadow-2xs hover:brightness-105 active:scale-95 transition-all text-white"
                 >
-                  <Plus className="w-3.5 h-3.5" />
-                  <span>Tulis Artikel</span>
+                  <Plus className="w-3.5 h-3.5 text-white" />
+                  <span>Buat Artikel</span>
                 </button>
               </div>
             )}
@@ -431,14 +697,14 @@ export const ArticlesView: React.FC<ArticlesViewProps> = ({
                 transition={{ duration: 0.16 }}
                 className="space-y-5"
               >
-                {/* Clean Unified Toolbar (Search + Dropdown Filters) */}
-                <div className="bg-[#F8FAFC] border border-[#E2E8F0] rounded-2xl p-3 sm:p-3.5 flex flex-wrap items-center justify-between gap-3">
+                {/* Clean, Uncontained Toolbar (Search + Dropdown Filters) */}
+                <div className="flex flex-wrap items-center justify-between gap-3 pb-1">
                   
                   {/* Left Filters Group */}
                   <div className="flex flex-wrap items-center gap-2.5 flex-1 min-w-0">
                     
                     {/* Search Field */}
-                    <div className="flex items-center gap-2 px-3 py-1.5 bg-white border border-[#E2E8F0] rounded-xl text-xs w-full sm:w-64 focus-within:border-[#0B1528] transition-all">
+                    <div className="flex items-center gap-2 px-3.5 py-2 bg-white border border-[#E2E8F0] rounded-xl text-xs w-full sm:w-68 hover:border-[#CBD5E1] focus-within:border-[#346FE5] focus-within:ring-2 focus-within:ring-[#346FE5]/15 transition-all shadow-2xs">
                       <Search className="w-3.5 h-3.5 text-[#94A3B8]" />
                       <input
                         type="text"
@@ -448,7 +714,7 @@ export const ArticlesView: React.FC<ArticlesViewProps> = ({
                         className="w-full bg-transparent focus:outline-none text-[#0B1528] placeholder-[#94A3B8]"
                       />
                       {searchQuery && (
-                        <button onClick={() => setSearchQuery('')} className="text-[#94A3B8] hover:text-[#0B1528]">
+                        <button onClick={() => setSearchQuery('')} className="text-[#94A3B8] hover:text-[#0B1528] cursor-pointer">
                           <X className="w-3 h-3" />
                         </button>
                       )}
@@ -462,14 +728,16 @@ export const ArticlesView: React.FC<ArticlesViewProps> = ({
                           setIsTypeOpen(false);
                           setIsSortOpen(false);
                         }}
-                        className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-medium border transition-all cursor-pointer ${
+                        className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-medium border transition-all cursor-pointer shadow-2xs ${
                           selectedLabel
-                            ? 'bg-white border-[#0B1528] text-[#0B1528] font-semibold shadow-xs'
-                            : 'bg-white border-[#E2E8F0] text-[#475569] hover:bg-slate-50'
+                            ? 'bg-[#F4F8FD] border-[#346FE5] text-[#1E6FD9] font-semibold'
+                            : 'bg-white border-[#E2E8F0] text-[#475569] hover:bg-slate-50 hover:border-[#CBD5E1]'
                         }`}
                       >
                         <span className="text-[#94A3B8]">Topik:</span>
-                        <span>{selectedLabelObj ? selectedLabelObj.nama : 'Semua Topik'}</span>
+                        <span className={selectedLabel ? 'text-[#1E6FD9] font-semibold' : 'text-[#0B1528]'}>
+                          {selectedLabelObj ? selectedLabelObj.nama : 'Semua Topik'}
+                        </span>
                         <ChevronDown className={`w-3.5 h-3.5 text-[#94A3B8] transition-transform ${isTopicOpen ? 'rotate-180' : ''}`} />
                       </button>
 
@@ -511,14 +779,16 @@ export const ArticlesView: React.FC<ArticlesViewProps> = ({
                           setIsTopicOpen(false);
                           setIsSortOpen(false);
                         }}
-                        className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-medium border transition-all cursor-pointer ${
+                        className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-medium border transition-all cursor-pointer shadow-2xs ${
                           selectedType
-                            ? 'bg-white border-[#0B1528] text-[#0B1528] font-semibold shadow-xs'
-                            : 'bg-white border-[#E2E8F0] text-[#475569] hover:bg-slate-50'
+                            ? 'bg-[#F4F8FD] border-[#346FE5] text-[#1E6FD9] font-semibold'
+                            : 'bg-white border-[#E2E8F0] text-[#475569] hover:bg-slate-50 hover:border-[#CBD5E1]'
                         }`}
                       >
                         <span className="text-[#94A3B8]">Tipe:</span>
-                        <span>{selectedType || 'Semua Tipe'}</span>
+                        <span className={selectedType ? 'text-[#1E6FD9] font-semibold' : 'text-[#0B1528]'}>
+                          {selectedType || 'Semua Tipe'}
+                        </span>
                         <ChevronDown className={`w-3.5 h-3.5 text-[#94A3B8] transition-transform ${isTypeOpen ? 'rotate-180' : ''}`} />
                       </button>
 
@@ -575,10 +845,10 @@ export const ArticlesView: React.FC<ArticlesViewProps> = ({
                           setIsTopicOpen(false);
                           setIsTypeOpen(false);
                         }}
-                        className="flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-medium bg-white border border-[#E2E8F0] text-[#475569] hover:bg-slate-50 transition-all cursor-pointer"
+                        className="flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-medium bg-white border border-[#E2E8F0] text-[#475569] hover:bg-slate-50 hover:border-[#CBD5E1] transition-all cursor-pointer shadow-2xs"
                       >
                         <SlidersHorizontal className="w-3 h-3 text-[#94A3B8]" />
-                        <span>
+                        <span className="text-[#0B1528]">
                           {sortBy === 'baru' && 'Terbaru'}
                           {sortBy === 'populer' && 'Paling Populer'}
                           {sortBy === 'baca' && 'Paling Banyak Dibaca'}
@@ -628,16 +898,6 @@ export const ArticlesView: React.FC<ArticlesViewProps> = ({
                         </div>
                       )}
                     </div>
-
-                    {/* Export to Medium Link */}
-                    <button
-                      onClick={() => setSubView('ekspor')}
-                      className="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium bg-white border border-[#E2E8F0] text-[#475569] hover:bg-slate-50 hover:text-[#0B1528] transition-colors cursor-pointer"
-                      title="Ekspor ke Medium"
-                    >
-                      <span>Ekspor Medium</span>
-                      <ArrowUpRight className="w-3.5 h-3.5 text-[#94A3B8]" />
-                    </button>
                   </div>
                 </div>
 
@@ -651,112 +911,9 @@ export const ArticlesView: React.FC<ArticlesViewProps> = ({
                   )}
                 </div>
 
-                {/* Clean Articles Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-                  {filtered.map((art) => {
-                    const user = USERS_MAP[art.penulis];
-                    const isBookmarked = bookmarkedIds.includes(art.id);
-                    return (
-                      <div
-                        key={art.id}
-                        onClick={() => {
-                          setSelectedArticleId(art.id);
-                          setSubView('detail');
-                        }}
-                        className="group bg-white border border-[#E2E8F0] rounded-2xl p-5 cursor-pointer shadow-xs hover:border-[#CBD5E1] hover:shadow-sm transition-all flex flex-col justify-between space-y-4"
-                      >
-                        {/* Card Header: Metadata Badges */}
-                        <div className="space-y-3">
-                          <div className="flex items-center justify-between gap-2">
-                            <div className="flex items-center gap-2">
-                              {/* Clean monochrome badge */}
-                              <span className="px-2.5 py-0.5 rounded-lg text-[11px] font-medium bg-[#F1F5F9] text-[#475569] border border-[#E2E8F0]">
-                                {art.tipe}
-                              </span>
-                              {art.pin && (
-                                <span className="flex items-center gap-1 px-2 py-0.5 rounded-lg text-[10px] font-semibold bg-[#F8FAFC] text-[#0B1528] border border-[#E2E8F0]">
-                                  <Pin className="w-2.5 h-2.5 fill-[#0B1528]" />
-                                  <span>Pin</span>
-                                </span>
-                              )}
-                            </div>
-                            
-                            <div className="flex items-center gap-1.5 text-[11px] text-[#94A3B8] font-mono">
-                              <Clock className="w-3 h-3 text-[#94A3B8]" />
-                              <span>{art.baca} mnt</span>
-                            </div>
-                          </div>
-
-                          {/* Title & Excerpt */}
-                          <div>
-                            <h3 className="text-sm sm:text-base font-semibold text-[#0B1528] leading-snug group-hover:text-[#1E6FD9] transition-colors">
-                              {art.judul}
-                            </h3>
-                            <p className="text-xs text-[#64748B] leading-relaxed line-clamp-2 mt-1.5">
-                              {art.ringkas}
-                            </p>
-                          </div>
-                        </div>
-
-                        {/* Card Footer: Author Info & Stats */}
-                        <div className="pt-3.5 border-t border-[#F1F5F9] flex items-center justify-between text-xs text-[#64748B]">
-                          {/* Author avatar & name */}
-                          <div className="flex items-center gap-2 min-w-0">
-                            <span className="w-6 h-6 rounded-full bg-[#0B1528] text-white flex items-center justify-center text-[10px] font-semibold shrink-0">
-                              {user?.inisial || 'U'}
-                            </span>
-                            <div className="truncate text-xs">
-                              <span className="text-[#0B1528] font-medium truncate block max-w-[100px]">
-                                {user?.nama}
-                              </span>
-                            </div>
-                          </div>
-
-                          {/* Stats Controls */}
-                          <div className="flex items-center gap-3 shrink-0">
-                            {/* Read / Views */}
-                            <span className="hidden sm:flex items-center gap-1 text-[11px] text-[#94A3B8]" title="Jumlah dilihat">
-                              <Eye className="w-3.5 h-3.5" />
-                              <span className="font-mono">{art.dilihat}</span>
-                            </span>
-
-                            {/* Likes */}
-                            <button
-                              onClick={(e) => handleToggleLike(art.id, e)}
-                              className={`flex items-center gap-1 transition-colors cursor-pointer ${
-                                art.sukaSaya ? 'text-[#0B1528] font-bold' : 'text-[#64748B] hover:text-[#0B1528]'
-                              }`}
-                              title="Suka"
-                            >
-                              <Heart className={`w-3.5 h-3.5 ${art.sukaSaya ? 'fill-[#0B1528] text-[#0B1528]' : ''}`} />
-                              <span className="font-mono text-[11px]">{art.like}</span>
-                            </button>
-
-                            {/* Comments */}
-                            <span className="flex items-center gap-1 text-[#64748B]" title="Komentar">
-                              <MessageSquare className="w-3.5 h-3.5" />
-                              <span className="font-mono text-[11px]">{art.komentar}</span>
-                            </span>
-
-                            {/* Bookmark */}
-                            <button
-                              onClick={(e) => handleToggleBookmark(art.id, e)}
-                              className={`p-1 rounded hover:bg-slate-100 transition-colors cursor-pointer ${
-                                isBookmarked ? 'text-[#0B1528]' : 'text-[#94A3B8] hover:text-[#0B1528]'
-                              }`}
-                              title={isBookmarked ? 'Tersimpan' : 'Simpan'}
-                            >
-                              <Bookmark className={`w-3.5 h-3.5 ${isBookmarked ? 'fill-[#0B1528]' : ''}`} />
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-
-                {/* Empty State */}
-                {filtered.length === 0 && (
+                {/* Categorized Sections View: Latest at Top (Max 4) followed by Sub-headings per Topic */}
+                {filtered.length === 0 ? (
+                  /* Empty State */
                   <div className="bg-[#F8FAFC] border border-[#E2E8F0] rounded-3xl p-12 text-center max-w-md mx-auto my-8 space-y-3">
                     <FileText className="w-10 h-10 text-[#94A3B8] mx-auto" />
                     <div className="space-y-1">
@@ -769,6 +926,131 @@ export const ArticlesView: React.FC<ArticlesViewProps> = ({
                     >
                       Reset Semua Filter
                     </button>
+                  </div>
+                ) : searchQuery.trim() ? (
+                  /* Search Results View */
+                  <div className="space-y-6">
+                    <div className="p-3.5 bg-blue-50/70 border border-blue-100 rounded-2xl flex items-center justify-between text-xs text-[#1E6FD9]">
+                      <span>Ditemukan <strong>{filtered.length}</strong> artikel untuk kata kunci &ldquo;<strong>{searchQuery}</strong>&rdquo;</span>
+                      <button onClick={() => setSearchQuery('')} className="font-semibold hover:underline cursor-pointer">
+                        Hapus Pencarian
+                      </button>
+                    </div>
+
+                    <ArticleHorizontalSection
+                      title="Hasil Pencarian"
+                      icon={Search}
+                      iconColor="text-[#1E6FD9]"
+                      articles={filtered}
+                      selectedArticleId={selectedArticleId}
+                      bookmarkedIds={bookmarkedIds}
+                      onSelectArticle={(id) => {
+                        setSelectedArticleId(id);
+                        setSubView('detail');
+                      }}
+                      onToggleLike={handleToggleLike}
+                      onToggleBookmark={handleToggleBookmark}
+                      onExportMedium={handleExportToMedium}
+                    />
+                  </div>
+                ) : (
+                  /* Standard Categorized View */
+                  <div className="space-y-7">
+                    {/* 1. PALING ATAS: TERBARU (Hanya tulisan "Terbaru") */}
+                    {!selectedLabel && (
+                      <ArticleHorizontalSection
+                        title="Terbaru"
+                        icon={Sparkles}
+                        iconColor="text-amber-500"
+                        articles={articles
+                          .filter(a => {
+                            if (activeTab === 'saya' && a.penulis !== CURRENT_USER.id) return false;
+                            if (selectedType && a.tipe !== selectedType) return false;
+                            return true;
+                          })
+                          .slice(0, 4)
+                        }
+                        selectedArticleId={selectedArticleId}
+                        bookmarkedIds={bookmarkedIds}
+                        onSelectArticle={(id) => {
+                          setSelectedArticleId(id);
+                          setSubView('detail');
+                        }}
+                        onToggleLike={handleToggleLike}
+                        onToggleBookmark={handleToggleBookmark}
+                        onExportMedium={handleExportToMedium}
+                      />
+                    )}
+
+                    {/* Divider lembut antara Terbaru dan Topik */}
+                    {!selectedLabel && <div className="h-px bg-[#F1F5F9]" />}
+
+                    {/* 2. TOPIK DENGAN KARTU BERJAJAR KE SAMPING (Tanpa sub-judul) */}
+                    {TOPIC_SECTIONS.map((topic) => {
+                      // Filter articles matching this topic
+                      const topicArticles = articles.filter(a => {
+                        if (activeTab === 'saya' && a.penulis !== CURRENT_USER.id) return false;
+                        if (selectedType && a.tipe !== selectedType) return false;
+                        if (selectedLabel && !a.label.includes(selectedLabel)) return false;
+                        return a.label.some(l => topic.labels.includes(l));
+                      });
+
+                      if (topicArticles.length === 0) return null;
+
+                      return (
+                        <ArticleHorizontalSection
+                          key={topic.id}
+                          title={topic.title}
+                          icon={topic.icon}
+                          iconColor={topic.iconColor}
+                          articles={topicArticles}
+                          selectedArticleId={selectedArticleId}
+                          bookmarkedIds={bookmarkedIds}
+                          onSelectArticle={(id) => {
+                            setSelectedArticleId(id);
+                            setSubView('detail');
+                          }}
+                          onToggleLike={handleToggleLike}
+                          onToggleBookmark={handleToggleBookmark}
+                          onExportMedium={handleExportToMedium}
+                        />
+                      );
+                    })}
+
+                    {/* Topik / Dokumentasi Lainnya jika ada artikel yang belum tercakup */}
+                    {(() => {
+                      const coveredIds = new Set(
+                        TOPIC_SECTIONS.flatMap(t => 
+                          articles.filter(a => a.label.some(l => t.labels.includes(l))).map(a => a.id)
+                        )
+                      );
+                      const otherArticles = articles.filter(a => {
+                        if (activeTab === 'saya' && a.penulis !== CURRENT_USER.id) return false;
+                        if (selectedType && a.tipe !== selectedType) return false;
+                        if (selectedLabel && !a.label.includes(selectedLabel)) return false;
+                        return !coveredIds.has(a.id);
+                      });
+
+                      if (otherArticles.length === 0) return null;
+
+                      return (
+                        <ArticleHorizontalSection
+                          title="Topik & Dokumen Lainnya"
+                          icon={Layers}
+                          iconColor="text-slate-600"
+                          articles={otherArticles}
+                          selectedArticleId={selectedArticleId}
+                          bookmarkedIds={bookmarkedIds}
+                          onSelectArticle={(id) => {
+                            setSelectedArticleId(id);
+                            setSubView('detail');
+                          }}
+                          onToggleLike={handleToggleLike}
+                          onToggleBookmark={handleToggleBookmark}
+                          onExportMedium={handleExportToMedium}
+                        />
+                      );
+                    })()}
                   </div>
                 )}
               </motion.div>

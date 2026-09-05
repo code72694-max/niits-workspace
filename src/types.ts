@@ -179,6 +179,10 @@ export interface Article {
   tipe: string;
   status?: 'terbit' | 'draft' | 'arsip';
   dilihat?: number;
+  coverImage?: string;
+  collaborators?: string[];
+  tools?: string[];
+  statusText?: string;
   medium?: {
     status: 'terbit' | 'draft' | 'belum';
     url: string | null;
