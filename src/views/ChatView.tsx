@@ -1,49 +1,252 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
-  ArrowLeft,
-  Send, 
-  Paperclip, 
-  Smile, 
-  Mic,
-  Hash, 
-  Lock, 
-  Users, 
   Search, 
-  MoreVertical,
-  CheckCheck,
-  Check,
+  Mail, 
+  MessageSquare, 
+  Plus, 
+  Mic, 
+  Send, 
   X, 
-  MessageSquare,
+  ChevronLeft, 
+  ChevronRight, 
+  MoreHorizontal, 
+  Users, 
+  User, 
+  Hash, 
   Sparkles,
   Phone,
   Video,
-  Pin,
-  ChevronLeft,
-  Info,
-  Layers,
-  LayoutGrid
+  ArrowLeft,
+  CheckCheck
 } from 'lucide-react';
-import { Channel, DirectMessageContact, ChatMessage, Task } from '../types';
-import { 
-  INITIAL_CHANNELS, 
-  INITIAL_DMS, 
-  INITIAL_MESSAGES, 
-  THREAD_REPLIES, 
-  USERS_MAP, 
-  CURRENT_USER,
-  ROOMS_MAP,
-  ROLES_CONFIG
-} from '../data/mockData';
+import { Task } from '../types';
 
 interface ChatViewProps {
-  onOpenTask: (task: Task) => void;
-  tasks: Task[];
+  onOpenTask?: (task: Task) => void;
+  tasks?: Task[];
   initialChatId?: string;
   onBackToWorkspace?: () => void;
 }
 
-type FilterTab = 'semua' | 'saluran' | 'pribadi' | 'belum';
+export type ConversationType = 'grup' | 'personal';
+
+export interface ConversationItem {
+  id: string;
+  name: string;
+  snippet: string;
+  avatar: string;
+  type: ConversationType;
+  badgeType: 'mail' | 'chat';
+  unreadCount?: number;
+  time: string;
+  isOnline?: boolean;
+  memberCount?: number;
+  role?: string;
+  roomColor?: string;
+}
+
+export interface ChatMessageItem {
+  id: string;
+  sender: 'them' | 'me';
+  senderName?: string;
+  text: string;
+  time: string;
+  hasPlusButton?: boolean;
+}
+
+export interface SmartSuggestion {
+  id: string;
+  title: string;
+  text: string;
+}
+
+const CONVERSATIONS_DATA: ConversationItem[] = [
+  // PERSONAL CHATS
+  {
+    id: 'p1',
+    name: 'Kenn Strathelm',
+    snippet: 'Up is opinion message manners correct hearing husband my. Disposing commanded dashwoods...',
+    avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=120&auto=format&fit=crop&q=80',
+    type: 'personal',
+    badgeType: 'mail',
+    unreadCount: 2,
+    time: '10:12 PM',
+    isOnline: true,
+    role: 'VP of Operations'
+  },
+  {
+    id: 'p2',
+    name: 'Sarah Jenkins',
+    snippet: 'Worth no tiled my at house added. Married he to unreserved assistance connection dry...',
+    avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=120&auto=format&fit=crop&q=80',
+    type: 'personal',
+    badgeType: 'chat',
+    time: '09:55 PM',
+    isOnline: true,
+    role: 'Lead Security Engineer'
+  },
+  {
+    id: 'p3',
+    name: 'Bambang Wijaya',
+    snippet: 'Is education residence conveying so so. Suppose shyness say ten behaved morning had...',
+    avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=120&auto=format&fit=crop&q=80',
+    type: 'personal',
+    badgeType: 'mail',
+    unreadCount: 1,
+    time: '09:42 PM',
+    isOnline: false,
+    role: 'Senior Backend Architect'
+  },
+  {
+    id: 'p4',
+    name: 'Jessica Chen',
+    snippet: 'Moonlight two applauded conveying end direction. Reviewed the design system tokens...',
+    avatar: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=120&auto=format&fit=crop&q=80',
+    type: 'personal',
+    badgeType: 'chat',
+    time: 'Yesterday',
+    isOnline: true,
+    role: 'Principal UI/UX Designer'
+  },
+  {
+    id: 'p5',
+    name: 'David Miller',
+    snippet: 'Are expenses distance weddings perceive strongly. The Kubernetes cluster autoscaling is stable...',
+    avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=120&auto=format&fit=crop&q=80',
+    type: 'personal',
+    badgeType: 'chat',
+    time: '2 days ago',
+    isOnline: false,
+    role: 'DevOps & SRE'
+  },
+
+  // GROUP CHATS
+  {
+    id: 'g1',
+    name: 'Core Platform & API',
+    snippet: 'Dimas: Deployment sprint v2.4 successfully migrated to cloud cluster.',
+    avatar: '',
+    type: 'grup',
+    badgeType: 'chat',
+    unreadCount: 4,
+    time: '10:05 PM',
+    memberCount: 12,
+    roomColor: '#1E6FD9'
+  },
+  {
+    id: 'g2',
+    name: 'Mobile Engineering Squad',
+    snippet: 'Sarah: Hotfix release untuk iOS push notification sudah siap di review.',
+    avatar: '',
+    type: 'grup',
+    badgeType: 'mail',
+    unreadCount: 3,
+    time: '08:30 PM',
+    memberCount: 8,
+    roomColor: '#0EA5E9'
+  },
+  {
+    id: 'g3',
+    name: 'QA & Security Automation',
+    snippet: 'Bambang: Vulnerability scanning lolos 100% tanpa finding critical.',
+    avatar: '',
+    type: 'grup',
+    badgeType: 'chat',
+    time: 'Yesterday',
+    memberCount: 6,
+    roomColor: '#10B981'
+  },
+  {
+    id: 'g4',
+    name: 'Product Design & System',
+    snippet: 'Jessica: Desain subtractive UI dan layout clean telah diperbarui di Figma.',
+    avatar: '',
+    type: 'grup',
+    badgeType: 'chat',
+    time: '3 days ago',
+    memberCount: 9,
+    roomColor: '#8B5CF6'
+  }
+];
+
+const INITIAL_MESSAGES_MAP: Record<string, ChatMessageItem[]> = {
+  p1: [
+    {
+      id: 'm1',
+      sender: 'them',
+      senderName: 'Kenn Strathelm',
+      text: 'Up is opinion message manners correct hearing husband my. Disposing commanded dashwoods cordially depending at at. Its strangers who you certainly earnestly resources suffering she.',
+      time: '10:12 PM'
+    },
+    {
+      id: 'm2',
+      sender: 'me',
+      text: 'And produce say the ten moments parties. Simple innate summer fat appear basket his desire joy.',
+      time: '10:12 PM',
+      hasPlusButton: true
+    }
+  ],
+  g1: [
+    {
+      id: 'mg1',
+      sender: 'them',
+      senderName: 'Bambang Wijaya',
+      text: 'Sprint review v2.4 telah selesai. Semua task integrasi backend telah dimerge ke staging branch.',
+      time: '09:50 PM'
+    },
+    {
+      id: 'mg2',
+      sender: 'them',
+      senderName: 'Sarah Jenkins',
+      text: 'Security check dan SSL verification juga pass dengan skor 98/100.',
+      time: '09:58 PM'
+    },
+    {
+      id: 'mg3',
+      sender: 'me',
+      text: 'Bagus sekali tim! Kita jadwalkan rilis produksi malam ini pukul 23:00 WIB.',
+      time: '10:05 PM',
+      hasPlusButton: true
+    }
+  ],
+  p2: [
+    {
+      id: 'mp20',
+      sender: 'them',
+      senderName: 'Sarah Jenkins',
+      text: 'Worth no tiled my at house added. Married he to unreserved assistance connection dry. Please confirm the courier schedule.',
+      time: '09:55 PM'
+    }
+  ],
+  g2: [
+    {
+      id: 'mg21',
+      sender: 'them',
+      senderName: 'Jessica Chen',
+      text: 'Animasi subtractive curve dan segmented filter di tampilan mobile sudah dites di iPhone dan Android, pergerakannya sangat smooth.',
+      time: '08:30 PM'
+    }
+  ]
+};
+
+const SMART_SUGGESTIONS: SmartSuggestion[] = [
+  {
+    id: 's1',
+    title: 'Smart Response',
+    text: 'Hey, Kenn! Is education residence conveying so so. Suppose shyness say ten behaved morning had. Your request will be processed immediately.'
+  },
+  {
+    id: 's2',
+    title: 'Smart Response',
+    text: 'Terima kasih atas updatenya! Semua spesifikasi telah dicek dan diverifikasi oleh tim internal kami.'
+  },
+  {
+    id: 's3',
+    title: 'Smart Response',
+    text: 'Siap, kita jadwalkan sync call singkat 15 menit untuk menyelaraskan detail pengerjaan.'
+  }
+];
 
 export const ChatView: React.FC<ChatViewProps> = ({
   onOpenTask,
@@ -51,908 +254,634 @@ export const ChatView: React.FC<ChatViewProps> = ({
   initialChatId,
   onBackToWorkspace
 }) => {
-  const [activeChatId, setActiveChatId] = useState<string>(initialChatId || 'c-agro');
-  const [messagesMap, setMessagesMap] = useState<Record<string, ChatMessage[]>>(INITIAL_MESSAGES);
+  const [filterType, setFilterType] = useState<'semua' | 'grup' | 'personal'>('semua');
+  const [activeChatId, setActiveChatId] = useState<string>(
+    initialChatId && CONVERSATIONS_DATA.some(c => c.id === initialChatId) ? initialChatId : 'p1'
+  );
+  const [conversations] = useState<ConversationItem[]>(CONVERSATIONS_DATA);
+  const [messagesMap, setMessagesMap] = useState<Record<string, ChatMessageItem[]>>(INITIAL_MESSAGES_MAP);
+  const [searchQuery, setSearchQuery] = useState('');
   const [inputMsg, setInputMsg] = useState('');
-  const [activeThreadId, setActiveThreadId] = useState<string | null>(null);
-  const [threadReplies, setThreadReplies] = useState(THREAD_REPLIES);
-  const [threadInput, setThreadInput] = useState('');
-  const [searchFilter, setSearchFilter] = useState('');
-  const [activeTab, setActiveTab] = useState<FilterTab>('semua');
-  const [showAttachMenu, setShowAttachMenu] = useState(false);
-  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
-  const [showMobileList, setShowMobileList] = useState(!initialChatId);
-  const [isSearchingInChat, setIsSearchingInChat] = useState(false);
-  const [inChatSearchQuery, setInChatSearchQuery] = useState('');
-  const [showInfoDrawer, setShowInfoDrawer] = useState(false);
+  const [smartIndex, setSmartIndex] = useState(0);
+  const [showSmartResponse, setShowSmartResponse] = useState(true);
+  const [mobilePane, setMobilePane] = useState<'list' | 'chat'>('chat');
+  const [inChatSearch, setInChatSearch] = useState(false);
+  const [inChatQuery, setInChatQuery] = useState('');
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    if (initialChatId) {
-      setActiveChatId(initialChatId);
-      setShowMobileList(false);
-    }
-  }, [initialChatId]);
+  // Filter conversations by category ('semua' | 'grup' | 'personal') and search query
+  const filteredConversations = conversations.filter((conv) => {
+    const matchesFilter = 
+      filterType === 'semua' ? true :
+      filterType === 'grup' ? conv.type === 'grup' :
+      conv.type === 'personal';
 
-  // Scroll to bottom when active chat or messages change
+    const matchesSearch = 
+      conv.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      conv.snippet.toLowerCase().includes(searchQuery.toLowerCase());
+
+    return matchesFilter && matchesSearch;
+  });
+
+  const activeConversation = conversations.find(c => c.id === activeChatId) || conversations[0];
+  const currentMessages = messagesMap[activeChatId] || [
+    {
+      id: 'm-def-1',
+      sender: 'them',
+      senderName: activeConversation.name,
+      text: activeConversation.snippet,
+      time: activeConversation.time
+    }
+  ];
+
+  // Filter messages if in-chat search is active
+  const displayedMessages = inChatQuery.trim()
+    ? currentMessages.filter(m => m.text.toLowerCase().includes(inChatQuery.toLowerCase()))
+    : currentMessages;
+
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [activeChatId, messagesMap]);
 
-  const currentChannel = INITIAL_CHANNELS.find(c => c.id === activeChatId);
-  const currentDM = INITIAL_DMS.find(d => d.id === activeChatId);
-  const dmUser = currentDM ? USERS_MAP[currentDM.user] : null;
-  const currentMessages = messagesMap[activeChatId] || [];
+  const handleSendMessage = (textToSend?: string) => {
+    const text = textToSend || inputMsg;
+    if (!text.trim()) return;
 
-  // Filter channels & DMs based on search and active tab
-  const filteredChannels = INITIAL_CHANNELS.filter(ch => {
-    if (activeTab === 'pribadi') return false;
-    if (activeTab === 'belum' && ch.belum === 0) return false;
-    if (!searchFilter.trim()) return true;
-    return ch.nama.toLowerCase().includes(searchFilter.toLowerCase()) ||
-           ch.ringkas.toLowerCase().includes(searchFilter.toLowerCase());
-  });
-
-  const filteredDMs = INITIAL_DMS.filter(dm => {
-    if (activeTab === 'saluran') return false;
-    if (activeTab === 'belum' && dm.belum === 0) return false;
-    const user = USERS_MAP[dm.user];
-    if (!searchFilter.trim()) return true;
-    return user?.nama.toLowerCase().includes(searchFilter.toLowerCase()) ||
-           dm.akhir.toLowerCase().includes(searchFilter.toLowerCase());
-  });
-
-  const handleSendMessage = (e?: React.FormEvent) => {
-    if (e) e.preventDefault();
-    if (!inputMsg.trim()) return;
-
-    const newMsg: ChatMessage = {
-      id: `m-new-${Date.now()}`,
-      user: CURRENT_USER.id,
-      waktu: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
-      tipe: 'teks',
-      isi: inputMsg.trim(),
-      react: []
+    const newMsg: ChatMessageItem = {
+      id: `msg-${Date.now()}`,
+      sender: 'me',
+      text: text.trim(),
+      time: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+      hasPlusButton: true
     };
 
     setMessagesMap(prev => ({
       ...prev,
       [activeChatId]: [...(prev[activeChatId] || []), newMsg]
     }));
-    setInputMsg('');
-    setShowEmojiPicker(false);
-    setShowAttachMenu(false);
+
+    if (!textToSend) {
+      setInputMsg('');
+    }
   };
 
-  const handleSendThreadReply = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!threadInput.trim()) return;
-
-    setThreadReplies(prev => [
-      ...prev,
-      {
-        user: CURRENT_USER.id,
-        waktu: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
-        isi: threadInput.trim()
-      }
-    ]);
-    setThreadInput('');
+  const handleSelectSmartResponse = () => {
+    const suggestion = SMART_SUGGESTIONS[smartIndex];
+    if (!suggestion) return;
+    handleSendMessage(suggestion.text);
+    setShowSmartResponse(false);
   };
 
-  const handleToggleReaction = (msgId: string, emoji: string) => {
-    setMessagesMap(prev => {
-      const list = prev[activeChatId] || [];
-      const updated = list.map(m => {
-        if (m.id === msgId) {
-          const currentReacts = m.react || [];
-          const existing = currentReacts.find(r => r.e === emoji);
-          if (existing) {
-            return {
-              ...m,
-              react: currentReacts.map(r => r.e === emoji ? { ...r, n: r.n + 1 } : r)
-            };
-          } else {
-            return {
-              ...m,
-              react: [...currentReacts, { e: emoji, n: 1 }]
-            };
-          }
-        }
-        return m;
-      });
-      return { ...prev, [activeChatId]: updated };
-    });
-  };
-
-  const handleSelectChat = (id: string) => {
-    setActiveChatId(id);
-    setActiveThreadId(null);
-    setShowMobileList(false);
-    setIsSearchingInChat(false);
-    setShowInfoDrawer(false);
-  };
-
-  const quickEmojis = ['👍', '❤️', '🔥', '🎉', '🚀', '👏', '😊', '✅'];
+  const groupCount = conversations.filter(c => c.type === 'grup').length;
+  const personalCount = conversations.filter(c => c.type === 'personal').length;
 
   return (
-    <div className="h-full w-full overflow-hidden flex rounded-2xl border border-[#D5E0ED] bg-[#EFEAE2] text-[#111B21] font-sans antialiased select-none shadow-xs">
-      {/* ========================================================================= */}
-      {/* LEFT PANEL: WhatsApp Web Sidebar (Chats & Saluran List)                    */}
-      {/* ========================================================================= */}
-      <div 
-        className={`
-          w-full md:w-[380px] lg:w-[420px] bg-white border-r border-[#E2E8F0] flex flex-col shrink-0 h-full z-20
-          ${showMobileList ? 'flex' : 'hidden md:flex'}
-        `}
-      >
-        {/* Top Bar / Profile & Actions */}
-        <div className="h-16 px-4 bg-[#F0F2F5] border-b border-[#E2E8F0] flex items-center justify-between shrink-0">
-          {/* Header Branding & User Avatar */}
-          <div className="flex items-center gap-2.5 min-w-0">
-            <div className="w-8 h-8 rounded-xl bg-[#00A884] text-white flex items-center justify-center shrink-0 shadow-2xs font-bold text-xs">
-              <Send className="w-4 h-4" />
-            </div>
-            <div className="min-w-0">
-              <span className="text-xs font-bold text-[#0A2540] truncate block leading-tight">
-                Chat & Saluran Tim
-              </span>
-              <span className="text-[10px] text-[#54656F] truncate block">
-                Diskusi Proyek & Tim
-              </span>
-            </div>
-          </div>
-
-          {/* Top Quick Actions */}
-          <div className="flex items-center gap-1 text-[#54656F]">
-            <button 
-              onClick={() => setActiveTab('saluran')}
-              className={`p-2 rounded-full hover:bg-[#E2E8F0] transition-colors ${activeTab === 'saluran' ? 'text-[#00A884] bg-[#E2E8F0]' : ''}`}
-              title="Saluran Tim"
-            >
-              <Hash className="w-4.5 h-4.5" />
-            </button>
-            <button 
-              onClick={() => setActiveTab('pribadi')}
-              className={`p-2 rounded-full hover:bg-[#E2E8F0] transition-colors ${activeTab === 'pribadi' ? 'text-[#00A884] bg-[#E2E8F0]' : ''}`}
-              title="Chat Pribadi"
-            >
-              <MessageSquare className="w-4.5 h-4.5" />
-            </button>
-            <button 
-              onClick={() => alert("NIITS Web Chat v2.4\nSemua komunikasi tersinkronisasi otomatis dengan Room dan Tugas Proyek.")}
-              className="p-2 rounded-full hover:bg-[#E2E8F0] transition-colors"
-              title="Pengaturan Chat"
-            >
-              <MoreVertical className="w-4.5 h-4.5" />
-            </button>
-          </div>
-        </div>
-
-        {/* Search & Filter Section */}
-        <div className="p-2.5 bg-white border-b border-[#F0F2F5] space-y-2">
-          {/* Search Input Bar */}
-          <div className="relative">
-            <Search className="w-4 h-4 text-[#54656F] absolute left-3 top-1/2 -translate-y-1/2" />
-            <input
-              type="text"
-              value={searchFilter}
-              onChange={(e) => setSearchFilter(e.target.value)}
-              placeholder="Cari saluran atau chat..."
-              className="w-full pl-9 pr-8 py-2 rounded-lg bg-[#F0F2F5] text-xs text-[#111B21] placeholder-[#54656F] focus:outline-none focus:bg-white focus:ring-1 focus:ring-[#00A884]"
-            />
-            {searchFilter && (
-              <button
-                onClick={() => setSearchFilter('')}
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#54656F] hover:text-[#111B21]"
-              >
-                <X className="w-3.5 h-3.5" />
-              </button>
-            )}
-          </div>
-
-          {/* Filter Pills (WhatsApp Web style) */}
-          <div className="flex items-center gap-1.5 overflow-x-auto pb-0.5 scrollbar-none">
-            {(['semua', 'saluran', 'pribadi', 'belum'] as FilterTab[]).map((tab) => {
-              const labels: Record<FilterTab, string> = {
-                semua: 'Semua',
-                saluran: 'Saluran',
-                pribadi: 'Pribadi',
-                belum: 'Belum Dibaca'
-              };
-              const isActive = activeTab === tab;
-              return (
-                <button
-                  key={tab}
-                  onClick={() => setActiveTab(tab)}
-                  className={`
-                    px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap transition-all cursor-pointer
-                    ${isActive 
-                      ? 'bg-[#E7FCE3] text-[#008069] font-semibold' 
-                      : 'bg-[#F0F2F5] text-[#54656F] hover:bg-[#E9EDEF]'}
-                  `}
-                >
-                  {labels[tab]}
-                </button>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Chat List Scrollable Container */}
-        <div className="flex-1 overflow-y-auto divide-y divide-[#F0F2F5]">
-          {/* Section 1: Saluran Tim */}
-          {filteredChannels.length > 0 && activeTab !== 'pribadi' && (
-            <div>
-              <div className="px-4 py-2 bg-[#F8FAFC] text-[10.5px] font-bold uppercase tracking-wider text-[#54656F] flex items-center justify-between">
-                <span>Saluran ({filteredChannels.length})</span>
-                <span className="text-[10px] text-[#00A884] font-medium">Ruang Diskusi</span>
-              </div>
-
-              {filteredChannels.map((ch) => {
-                const isActive = activeChatId === ch.id;
-                const room = ch.room ? ROOMS_MAP[ch.room] : null;
-                const latestMsg = (messagesMap[ch.id] || []).slice(-1)[0];
-
-                return (
+    <div className="relative w-full h-full flex-1 flex flex-col min-h-0">
+      {/* Seamless Unified Card Container - exactly matching ArticlesView structure */}
+      <div className="relative bg-white rounded-[32px] sm:rounded-[36px] border border-[#E2E8F0] shadow-xs flex-1 min-h-0 flex flex-col overflow-hidden">
+        
+        {/* Top Header: Clean, monochrome, professional navigation bar matching ArticlesView (h-[72px]) */}
+        <div className="h-[72px] shrink-0 border-b border-[#E2E8F0] px-5 sm:px-7 bg-white">
+          <div className="w-full h-full flex items-center justify-between gap-4">
+            {/* Left: Title & Subtitle */}
+            <div className="flex flex-col justify-center min-w-0">
+              <div className="flex items-center gap-2.5">
+                {onBackToWorkspace && (
                   <button
-                    key={ch.id}
-                    onClick={() => handleSelectChat(ch.id)}
-                    className={`
-                      w-full px-3.5 py-3 flex items-center gap-3 text-left transition-colors cursor-pointer
-                      ${isActive ? 'bg-[#F0F2F5]' : 'hover:bg-[#F8FAFC]'}
-                    `}
+                    onClick={onBackToWorkspace}
+                    className="p-1.5 -ml-1 rounded-lg hover:bg-[#F1F5F9] text-[#64748B] hover:text-[#0B1528] transition-colors cursor-pointer"
+                    title="Kembali ke Workspace"
                   >
-                    {/* Avatar Icon */}
-                    <div 
-                      className="w-11 h-11 rounded-full flex items-center justify-center font-bold text-white shrink-0 shadow-2xs"
-                      style={{ backgroundColor: room?.warna || '#00A884' }}
-                    >
-                      {ch.kunci ? <Lock className="w-5 h-5" /> : <Hash className="w-5 h-5" />}
-                    </div>
-
-                    {/* Chat Text Info */}
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between mb-0.5">
-                        <span className={`text-sm truncate ${isActive ? 'font-bold text-[#111B21]' : 'font-semibold text-[#111B21]'}`}>
-                          #{ch.nama}
-                        </span>
-                        <span className="text-[11px] text-[#667781] shrink-0 font-mono">
-                          {latestMsg?.waktu || 'Baru'}
-                        </span>
-                      </div>
-
-                      <div className="flex items-center justify-between">
-                        <p className="text-xs text-[#667781] truncate pr-2">
-                          {latestMsg ? (
-                            <span>
-                              <span className="text-[#54656F] font-medium">
-                                {USERS_MAP[latestMsg.user || '']?.nama?.split(' ')[0] || 'Sistem'}: 
-                              </span>{' '}
-                              {latestMsg.isi}
-                            </span>
-                          ) : (
-                            ch.ringkas
-                          )}
-                        </p>
-
-                        {/* Unread Badge / Pin */}
-                        <div className="flex items-center gap-1.5 shrink-0">
-                          {ch.pin && <Pin className="w-3 h-3 text-[#8696A0]" />}
-                          {ch.belum > 0 && (
-                            <span className="min-w-5 h-5 px-1.5 rounded-full bg-[#25D366] text-white text-[11px] font-bold flex items-center justify-center leading-none">
-                              {ch.belum}
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                    </div>
+                    <ArrowLeft className="w-4 h-4" />
                   </button>
-                );
-              })}
+                )}
+                <h2 className="text-base sm:text-lg font-semibold text-[#0B1528] tracking-tight truncate">
+                  Pesan & Percakapan
+                </h2>
+              </div>
+              <p className="text-xs text-[#64748B] truncate mt-0.5">
+                Komunikasi langsung dan koordinasi grup kerja tim secara instan
+              </p>
             </div>
-          )}
 
-          {/* Section 2: Pesan Langsung (DMs) */}
-          {filteredDMs.length > 0 && activeTab !== 'saluran' && (
-            <div>
-              <div className="px-4 py-2 bg-[#F8FAFC] text-[10.5px] font-bold uppercase tracking-wider text-[#54656F] flex items-center justify-between">
-                <span>Chat Pribadi ({filteredDMs.length})</span>
-                <span className="text-[10px] text-[#00A884] font-medium">Kontak Tim</span>
+            {/* Right Header: Scope Filter (Semua, Grup, Personal) & Action Button */}
+            <div className="flex items-center gap-2.5 shrink-0">
+              {/* Clean Scope Toggle: Semua / Grup / Personal matching ArticlesView pill toggle */}
+              <div className="flex items-center bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl p-1">
+                <button
+                  onClick={() => setFilterType('semua')}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                    filterType === 'semua'
+                      ? 'bg-white text-[#0B1528] shadow-xs'
+                      : 'text-[#64748B] hover:text-[#0B1528]'
+                  }`}
+                >
+                  Semua ({conversations.length})
+                </button>
+                <button
+                  onClick={() => setFilterType('grup')}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                    filterType === 'grup'
+                      ? 'bg-white text-[#0B1528] shadow-xs'
+                      : 'text-[#64748B] hover:text-[#0B1528]'
+                  }`}
+                >
+                  <Users className="w-3.5 h-3.5" />
+                  <span>Grup ({groupCount})</span>
+                </button>
+                <button
+                  onClick={() => setFilterType('personal')}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                    filterType === 'personal'
+                      ? 'bg-white text-[#0B1528] shadow-xs'
+                      : 'text-[#64748B] hover:text-[#0B1528]'
+                  }`}
+                >
+                  <User className="w-3.5 h-3.5" />
+                  <span>Personal ({personalCount})</span>
+                </button>
               </div>
 
-              {filteredDMs.map((dm) => {
-                const user = USERS_MAP[dm.user];
-                if (!user) return null;
-                const isActive = activeChatId === dm.id;
-                const latestMsg = (messagesMap[dm.id] || []).slice(-1)[0];
+              {/* Action Button: Kirim Pesan Baru */}
+              <button
+                onClick={() => setShowSmartResponse(true)}
+                className="btn-3d-primary hidden sm:flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold cursor-pointer shadow-2xs hover:brightness-105 active:scale-95 transition-all text-white"
+              >
+                <Plus className="w-3.5 h-3.5 text-white" />
+                <span>Pesan Baru</span>
+              </button>
+            </div>
+          </div>
+        </div>
 
-                return (
-                  <button
-                    key={dm.id}
-                    onClick={() => handleSelectChat(dm.id)}
-                    className={`
-                      w-full px-3.5 py-3 flex items-center gap-3 text-left transition-colors cursor-pointer
-                      ${isActive ? 'bg-[#F0F2F5]' : 'hover:bg-[#F8FAFC]'}
-                    `}
-                  >
-                    {/* User Avatar */}
-                    <div 
-                      className="w-11 h-11 rounded-full flex items-center justify-center font-bold text-sm text-white shrink-0 shadow-2xs relative"
-                      style={{ backgroundColor: user.warna }}
+        {/* Content Body: Left conversation sidebar + Right chat message stream */}
+        <div className="flex-1 min-h-0 flex overflow-hidden relative">
+
+          {/* ========================================================================= */}
+          {/* COLUMN 1: Conversations (Left Panel with Subtracted Smooth Tab) */}
+          {/* ========================================================================= */}
+          <div 
+            className={`
+              w-full md:w-[320px] lg:w-[350px] xl:w-[370px] bg-[#F4F7FB] flex flex-col shrink-0 h-full relative z-10 border-r border-[#E2E8F0]
+              ${mobilePane === 'list' ? 'flex' : 'hidden md:flex'}
+            `}
+          >
+            {/* Header info in list */}
+            <div className="pt-4 pb-2 px-6 flex items-center justify-between">
+              <span className="text-[11px] font-bold text-[#8B9EB5] tracking-wider uppercase">
+                {filterType === 'semua' ? 'Semua Obrolan' : filterType === 'grup' ? 'Saluran Grup' : 'Kontak Personal'}
+              </span>
+              <span className="text-[11px] font-mono text-[#64748B] font-semibold">
+                {filteredConversations.length} obrolan
+              </span>
+            </div>
+
+            {/* Conversations List with Subtracted Smooth Active Tab */}
+            <div className="flex-1 overflow-y-auto py-1 relative scrollbar-none">
+              {filteredConversations.length === 0 ? (
+                <div className="p-8 text-center text-[#8B9EB5] text-xs">
+                  Tidak ada obrolan dalam filter ini.
+                </div>
+              ) : (
+                filteredConversations.map((conv) => {
+                  const isActive = conv.id === activeChatId;
+
+                  return (
+                    <div
+                      key={conv.id}
+                      onClick={() => {
+                        setActiveChatId(conv.id);
+                        setMobilePane('chat');
+                      }}
+                      className={`
+                        group relative px-6 py-3.5 flex items-center gap-3.5 cursor-pointer transition-colors
+                        ${isActive ? 'bg-white z-20' : 'hover:bg-white/50 text-[#64748B]'}
+                      `}
                     >
-                      {user.inisial}
-                      <span className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-[#25D366] ring-2 ring-white" />
-                    </div>
+                      {/* SUBTRACTED CONCAVE FILLETS (Only on Active Item) */}
+                      {isActive && (
+                        <>
+                          {/* Active Blue Indicator Dot on the far left */}
+                          <motion.span 
+                            layoutId="activeSubtractedDot"
+                            className="absolute left-2.5 top-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full bg-[#1E6FD9]"
+                            transition={{ type: 'spring', stiffness: 450, damping: 35 }}
+                          />
 
-                    {/* Chat Text Info */}
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between mb-0.5">
-                        <span className={`text-sm truncate ${isActive ? 'font-bold text-[#111B21]' : 'font-semibold text-[#111B21]'}`}>
-                          {user.nama}
-                        </span>
-                        <span className="text-[11px] text-[#667781] shrink-0 font-mono">
-                          {latestMsg?.waktu || '09:12'}
-                        </span>
+                          {/* Top Inverted Concave Fillet (melts into the right white panel) */}
+                          <svg 
+                            className="absolute right-0 -top-5 w-5 h-5 pointer-events-none fill-white z-30" 
+                            viewBox="0 0 20 20"
+                          >
+                            <path d="M 0 20 Q 20 20 20 0 L 20 20 Z" />
+                          </svg>
+
+                          {/* Bottom Inverted Concave Fillet (melts into the right white panel) */}
+                          <svg 
+                            className="absolute right-0 -bottom-5 w-5 h-5 pointer-events-none fill-white z-30" 
+                            viewBox="0 0 20 20"
+                          >
+                            <path d="M 0 0 Q 20 0 20 20 L 20 0 Z" />
+                          </svg>
+                        </>
+                      )}
+
+                      {/* Avatar (Group Icon with room color OR Personal Photo) */}
+                      <div className="relative shrink-0">
+                        {conv.type === 'grup' ? (
+                          <div 
+                            className="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl flex items-center justify-center text-white font-bold shadow-2xs"
+                            style={{ backgroundColor: conv.roomColor || '#1E6FD9' }}
+                          >
+                            <Hash className="w-5 h-5 stroke-[2.5]" />
+                          </div>
+                        ) : (
+                          <div className="relative">
+                            <img 
+                              src={conv.avatar} 
+                              alt={conv.name}
+                              referrerPolicy="no-referrer"
+                              className="w-10 h-10 sm:w-11 sm:h-11 rounded-full object-cover ring-2 ring-white shadow-2xs"
+                            />
+                            {conv.isOnline && (
+                              <span className="absolute bottom-0 right-0 w-3 h-3 rounded-full bg-emerald-500 ring-2 ring-white" />
+                            )}
+                          </div>
+                        )}
                       </div>
 
-                      <div className="flex items-center justify-between">
-                        <p className="text-xs text-[#667781] truncate pr-2">
-                          {latestMsg?.isi || dm.akhir}
+                      {/* Text Content */}
+                      <div className="flex-1 min-w-0 pr-1">
+                        <div className="flex items-center justify-between mb-0.5">
+                          <h3 className={`text-xs font-bold truncate flex items-center gap-1.5 ${isActive ? 'text-[#0A2540]' : 'text-[#334155]'}`}>
+                            <span>{conv.name}</span>
+                            {conv.type === 'grup' && (
+                              <span className="text-[10px] font-semibold text-[#8B9EB5]">
+                                ({conv.memberCount})
+                              </span>
+                            )}
+                          </h3>
+                          <span className="text-[10px] font-mono text-[#94A3B8] shrink-0">
+                            {conv.time}
+                          </span>
+                        </div>
+                        <p className={`text-[11.5px] leading-relaxed line-clamp-2 ${isActive ? 'text-[#475569] font-medium' : 'text-[#8B9EB5]'}`}>
+                          {conv.snippet}
                         </p>
+                      </div>
 
-                        {/* Unread Badge */}
-                        {dm.belum > 0 && (
-                          <span className="min-w-5 h-5 px-1.5 rounded-full bg-[#25D366] text-white text-[11px] font-bold flex items-center justify-center leading-none shrink-0">
-                            {dm.belum}
+                      {/* Right Status Badge Icon (Red Mail or Cyan Bubble) */}
+                      <div className="shrink-0 flex flex-col items-end gap-1">
+                        {conv.badgeType === 'mail' ? (
+                          <span className="w-5 h-5 rounded-md flex items-center justify-center text-[#F43F5E]">
+                            <Mail className="w-4 h-4 stroke-[1.75]" />
+                          </span>
+                        ) : (
+                          <span className="w-5 h-5 rounded-md flex items-center justify-center text-[#06B6D4]">
+                            <MessageSquare className="w-4 h-4 stroke-[1.75]" />
+                          </span>
+                        )}
+                        {conv.unreadCount && (
+                          <span className="w-4 h-4 rounded-full bg-[#1E6FD9] text-white text-[9.5px] font-bold flex items-center justify-center">
+                            {conv.unreadCount}
                           </span>
                         )}
                       </div>
                     </div>
+                  );
+                })
+              )}
+            </div>
+
+            {/* Bottom Search Input */}
+            <div className="p-4 px-6 pb-5 bg-[#F4F7FB] border-t border-[#E9EFF6]">
+              <div className="relative flex items-center">
+                <span className="absolute left-3 w-4 h-4 rounded-full border-2 border-[#CBD5E1] flex items-center justify-center pointer-events-none">
+                  <span className="w-1 h-1 rounded-full bg-[#CBD5E1]" />
+                </span>
+                <input 
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Cari pesan atau kontak..."
+                  className="w-full pl-9 pr-4 py-2 rounded-xl bg-white text-xs text-[#0A2540] placeholder-[#94A3B8] focus:outline-none focus:ring-1 focus:ring-[#1E6FD9]/30 transition-all border border-[#E2E8F0]"
+                />
+                {searchQuery && (
+                  <button
+                    onClick={() => setSearchQuery('')}
+                    className="absolute right-3 p-1 rounded-full text-[#94A3B8] hover:text-[#0A2540]"
+                  >
+                    <X className="w-3.5 h-3.5" />
                   </button>
-                );
-              })}
-            </div>
-          )}
-
-          {/* Empty Search State */}
-          {filteredChannels.length === 0 && filteredDMs.length === 0 && (
-            <div className="p-8 text-center text-[#54656F] space-y-2">
-              <Search className="w-8 h-8 mx-auto text-[#8696A0] stroke-[1.5]" />
-              <p className="text-xs font-semibold text-[#111B21]">Tidak ada obrolan ditemukan</p>
-              <p className="text-[11px]">Coba kata kunci pencarian lain atau pilih tab "Semua".</p>
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* ========================================================================= */}
-      {/* RIGHT PANEL: WhatsApp Web Active Chat Window                               */}
-      {/* ========================================================================= */}
-      <div 
-        className={`
-          flex-1 flex flex-col h-full min-w-0 bg-[#EFEAE2] relative
-          ${showMobileList ? 'hidden md:flex' : 'flex'}
-        `}
-      >
-        {/* Subtle WhatsApp Wallpaper background overlay */}
-        <div 
-          className="absolute inset-0 opacity-40 pointer-events-none z-0"
-          style={{
-            backgroundImage: `radial-gradient(#CBD5E1 0.75px, transparent 0.75px)`,
-            backgroundSize: '16px 16px'
-          }}
-        />
-
-        {/* Chat Conversation Header */}
-        <div className="h-16 px-4 bg-[#F0F2F5] border-b border-[#E2E8F0] flex items-center justify-between shrink-0 z-10">
-          <div className="flex items-center gap-3 min-w-0">
-            {/* Mobile Back Button to list */}
-            <button
-              onClick={() => setShowMobileList(true)}
-              className="md:hidden p-1.5 -ml-1 rounded-full text-[#54656F] hover:bg-[#E2E8F0] transition-colors"
-              aria-label="Kembali ke daftar obrolan"
-            >
-              <ChevronLeft className="w-6 h-6" />
-            </button>
-
-            {/* Chat Avatar */}
-            {currentChannel ? (
-              <div 
-                className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold shrink-0 shadow-2xs cursor-pointer"
-                style={{ backgroundColor: ROOMS_MAP[currentChannel.room || '']?.warna || '#00A884' }}
-                onClick={() => setShowInfoDrawer(!showInfoDrawer)}
-              >
-                {currentChannel.kunci ? <Lock className="w-5 h-5" /> : <Hash className="w-5 h-5" />}
-              </div>
-            ) : currentDM && dmUser ? (
-              <div 
-                className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm shrink-0 shadow-2xs cursor-pointer relative"
-                style={{ backgroundColor: dmUser.warna }}
-                onClick={() => setShowInfoDrawer(!showInfoDrawer)}
-              >
-                {dmUser.inisial}
-                <span className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-[#25D366] ring-2 ring-white" />
-              </div>
-            ) : (
-              <div className="w-10 h-10 rounded-full bg-[#1E6FD9] flex items-center justify-center text-white font-bold">
-                <MessageSquare className="w-5 h-5" />
-              </div>
-            )}
-
-            {/* Chat Title & Status Details */}
-            <div 
-              className="min-w-0 cursor-pointer"
-              onClick={() => setShowInfoDrawer(!showInfoDrawer)}
-            >
-              <h3 className="text-sm font-bold text-[#111B21] truncate leading-tight flex items-center gap-1.5">
-                <span>{currentChannel ? `#${currentChannel.nama}` : dmUser?.nama || 'Obrolan'}</span>
-              </h3>
-              <p className="text-[11px] text-[#54656F] truncate leading-tight mt-0.5">
-                {currentChannel ? (
-                  <span>{currentChannel.anggota.length} anggota tim &bull; {currentChannel.ringkas}</span>
-                ) : dmUser ? (
-                  <span>online &bull; {dmUser.peran} ({dmUser.email})</span>
-                ) : (
-                  <span>Obrolan aktif</span>
                 )}
-              </p>
+              </div>
             </div>
           </div>
 
-          {/* Right Action Icons in Conversation */}
-          <div className="flex items-center gap-1 text-[#54656F]">
-            {/* Search within conversation */}
-            <button
-              onClick={() => setIsSearchingInChat(!isSearchingInChat)}
-              className={`p-2 rounded-full hover:bg-[#E2E8F0] transition-colors ${isSearchingInChat ? 'text-[#00A884] bg-[#E2E8F0]' : ''}`}
-              title="Cari dalam obrolan"
-            >
-              <Search className="w-4.5 h-4.5" />
-            </button>
+          {/* ========================================================================= */}
+          {/* COLUMN 2: Active Chat Stream (White Canvas filling rest of container)     */}
+          {/* ========================================================================= */}
+          <div 
+            className={`
+              flex-1 flex flex-col h-full min-w-0 bg-white relative z-0
+              ${mobilePane === 'chat' ? 'flex' : 'hidden md:flex'}
+            `}
+          >
+            {/* Header Bar */}
+            <div className="h-14 px-6 border-b border-[#F1F5F9] flex items-center justify-between shrink-0 bg-white z-10">
+              <div className="flex items-center gap-3.5 min-w-0">
+                {/* Mobile Back Button */}
+                <button 
+                  onClick={() => setMobilePane('list')}
+                  className="md:hidden p-1.5 -ml-2 rounded-xl text-[#64748B] hover:bg-slate-100"
+                  aria-label="Kembali ke daftar"
+                >
+                  <ChevronLeft className="w-5 h-5" />
+                </button>
 
-            {/* View info/members drawer */}
-            <button
-              onClick={() => setShowInfoDrawer(!showInfoDrawer)}
-              className={`p-2 rounded-full hover:bg-[#E2E8F0] transition-colors ${showInfoDrawer ? 'text-[#00A884] bg-[#E2E8F0]' : ''}`}
-              title="Info obrolan & anggota"
-            >
-              <Users className="w-4.5 h-4.5" />
-            </button>
+                {/* Active Conversation Avatar */}
+                {activeConversation.type === 'grup' ? (
+                  <div 
+                    className="w-9 h-9 rounded-xl flex items-center justify-center text-white font-bold shadow-2xs shrink-0"
+                    style={{ backgroundColor: activeConversation.roomColor || '#1E6FD9' }}
+                  >
+                    <Hash className="w-4.5 h-4.5 stroke-[2.5]" />
+                  </div>
+                ) : (
+                  <div className="relative shrink-0">
+                    <img 
+                      src={activeConversation.avatar} 
+                      alt={activeConversation.name}
+                      referrerPolicy="no-referrer"
+                      className="w-9 h-9 rounded-full object-cover ring-2 ring-slate-100"
+                    />
+                    {activeConversation.isOnline && (
+                      <span className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-emerald-500 ring-2 ring-white" />
+                    )}
+                  </div>
+                )}
 
-            {/* Quick exit to Workspace */}
-            {onBackToWorkspace && (
-              <button
-                onClick={onBackToWorkspace}
-                className="hidden lg:flex items-center gap-1 ml-2 px-2.5 py-1.5 rounded-lg bg-white border border-[#E2E8F0] text-[#0A2540] hover:bg-[#E2E8F0] transition-colors text-xs font-semibold shadow-2xs"
-                title="Keluar ke Workspace"
-              >
-                <LayoutGrid className="w-3.5 h-3.5 text-[#1E6FD9]" />
-                <span>Keluar</span>
-              </button>
-            )}
-          </div>
-        </div>
-
-        {/* Search within chat banner (if toggled) */}
-        <AnimatePresence>
-          {isSearchingInChat && (
-            <motion.div
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: 'auto', opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              className="bg-[#F0F2F5] border-b border-[#E2E8F0] px-4 py-2 flex items-center gap-2 z-10 shrink-0"
-            >
-              <Search className="w-4 h-4 text-[#54656F]" />
-              <input
-                type="text"
-                value={inChatSearchQuery}
-                onChange={(e) => setInChatSearchQuery(e.target.value)}
-                placeholder="Cari kata atau isi pesan di obrolan ini..."
-                className="flex-1 bg-white rounded-md px-3 py-1.5 text-xs text-[#111B21] focus:outline-none border border-[#E2E8F0]"
-                autoFocus
-              />
-              <button
-                onClick={() => { setIsSearchingInChat(false); setInChatSearchQuery(''); }}
-                className="p-1 rounded-md text-[#54656F] hover:bg-[#E2E8F0]"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        {/* Messages Container */}
-        <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-3 relative z-10">
-          {/* End-to-end encryption notification banner (WhatsApp style) */}
-          <div className="flex justify-center my-2">
-            <div className="bg-[#FFEECD] text-[#54656F] text-[11px] px-3.5 py-1.5 rounded-lg shadow-xs max-w-md text-center flex items-center gap-1.5 border border-[#FDE68A]">
-              <Lock className="w-3 h-3 text-[#B45309] shrink-0" />
-              <span>
-                Pesan dienkripsi secara end-to-end. Terhubung langsung dengan database NIITS Workspace.
-              </span>
-            </div>
-          </div>
-
-          {/* Date Separator Pill */}
-          <div className="flex justify-center my-3">
-            <span className="bg-white/90 text-[#54656F] text-[11px] font-semibold px-3 py-1 rounded-lg shadow-2xs border border-[#E2E8F0]">
-              HARI INI
-            </span>
-          </div>
-
-          {/* Messages Stream */}
-          {currentMessages
-            .filter(m => !inChatSearchQuery || m.isi.toLowerCase().includes(inChatSearchQuery.toLowerCase()))
-            .map((msg) => {
-              if (msg.tipe === 'sistem') {
-                return (
-                  <div key={msg.id} className="flex justify-center my-2">
-                    <span className="text-[11px] font-medium text-[#54656F] bg-white/80 px-3 py-1 rounded-lg border border-[#E2E8F0] shadow-2xs">
-                      {msg.isi}
+                {/* Title & Subtitle */}
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2">
+                    <h3 className="text-xs sm:text-sm font-bold text-[#0A2540] truncate leading-tight">
+                      {activeConversation.name}
+                    </h3>
+                    <span className={`text-[10px] font-bold px-2 py-0.2 rounded-full ${
+                      activeConversation.type === 'grup' 
+                        ? 'bg-purple-50 text-purple-700' 
+                        : 'bg-blue-50 text-blue-700'
+                    }`}>
+                      {activeConversation.type === 'grup' ? 'Grup' : 'Personal'}
                     </span>
                   </div>
-                );
-              }
+                  <p className="text-[11px] text-[#8B9EB5] truncate leading-tight mt-0.5">
+                    {activeConversation.type === 'grup' ? (
+                      <span>{activeConversation.memberCount} anggota tim aktif</span>
+                    ) : (
+                      <span>{activeConversation.isOnline ? 'Online • ' : 'Offline • '}{activeConversation.role}</span>
+                    )}
+                  </p>
+                </div>
+              </div>
 
-              const isMe = msg.user === CURRENT_USER.id;
-              const sender = USERS_MAP[msg.user || ''] || CURRENT_USER;
-              const linkedTask = msg.tugas ? tasks.find(t => t.id === msg.tugas) : null;
-
-              return (
-                <div 
-                  key={msg.id} 
-                  className={`flex flex-col ${isMe ? 'items-end' : 'items-start'} group`}
+              {/* Header Actions */}
+              <div className="flex items-center gap-1 text-[#8B9EB5]">
+                <button 
+                  onClick={() => setInChatSearch(!inChatSearch)}
+                  className={`p-2 rounded-xl transition-colors cursor-pointer ${inChatSearch ? 'text-[#1E6FD9] bg-[#E8F1FD]' : 'hover:text-[#0A2540] hover:bg-slate-100'}`}
+                  title="Cari dalam pesan"
                 >
-                  {/* WhatsApp Message Bubble */}
-                  <div 
-                    className={`
-                      relative max-w-[85%] sm:max-w-[75%] md:max-w-[65%] px-3.5 pt-2 pb-2 rounded-xl text-xs leading-relaxed shadow-[0_1px_0.5px_rgba(11,20,26,0.13)]
-                      ${isMe 
-                        ? 'bg-[#D9FDD3] text-[#111B21] rounded-tr-none' 
-                        : 'bg-white text-[#111B21] rounded-tl-none border border-[#E2E8F0]/40'}
-                    `}
+                  <Search className="w-4.5 h-4.5" />
+                </button>
+                <button 
+                  onClick={() => alert(`Memulai panggilan suara dengan ${activeConversation.name}...`)}
+                  className="p-2 rounded-xl hover:text-[#0A2540] hover:bg-slate-100 transition-colors cursor-pointer"
+                  title="Panggilan suara"
+                >
+                  <Phone className="w-4.5 h-4.5" />
+                </button>
+                <button 
+                  onClick={() => alert(`Memulai panggilan video dengan ${activeConversation.name}...`)}
+                  className="p-2 rounded-xl hover:text-[#0A2540] hover:bg-slate-100 transition-colors cursor-pointer"
+                  title="Panggilan video"
+                >
+                  <Video className="w-4.5 h-4.5" />
+                </button>
+              </div>
+            </div>
+
+            {/* In-Chat Search Bar Dropdown */}
+            <AnimatePresence>
+              {inChatSearch && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: 'auto', opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  className="bg-[#F8FAFC] border-b border-[#EAEFF5] px-6 py-2.5 flex items-center gap-2 shrink-0"
+                >
+                  <Search className="w-4 h-4 text-[#94A3B8]" />
+                  <input
+                    type="text"
+                    value={inChatQuery}
+                    onChange={(e) => setInChatQuery(e.target.value)}
+                    placeholder="Cari kata dalam percakapan ini..."
+                    className="flex-1 bg-white rounded-xl px-3.5 py-1.5 text-xs text-[#0A2540] border border-[#E2E8F0] focus:outline-none focus:border-[#1E6FD9]"
+                    autoFocus
+                  />
+                  <button
+                    onClick={() => { setInChatQuery(''); setInChatSearch(false); }}
+                    className="p-1 text-[#94A3B8] hover:text-[#0A2540]"
                   >
-                    {/* Sender Name (for incoming messages in channels) */}
-                    {!isMe && (
-                      <div className="font-bold text-[11.5px] mb-1 flex items-center gap-1.5" style={{ color: sender.warna || '#00A884' }}>
-                        <span>{sender.nama}</span>
-                        <span className="text-[9.5px] font-normal text-[#667781]">({sender.peran})</span>
-                      </div>
+                    <X className="w-4 h-4" />
+                  </button>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {/* Messages Scroll Area */}
+            <div className="flex-1 overflow-y-auto p-6 sm:p-8 space-y-6 flex flex-col justify-start">
+              {displayedMessages.map((msg) => {
+                const isThem = msg.sender === 'them';
+
+                return (
+                  <div 
+                    key={msg.id}
+                    className={`flex flex-col ${isThem ? 'items-start' : 'items-start'} max-w-2xl`}
+                  >
+                    {/* Sender Name for group chats */}
+                    {isThem && activeConversation.type === 'grup' && msg.senderName && (
+                      <span className="text-[11px] font-bold text-[#1E6FD9] mb-1 pl-1">
+                        {msg.senderName}
+                      </span>
                     )}
 
-                    {/* Message Body */}
-                    <div className="text-[13px] text-[#111B21] whitespace-pre-wrap break-words leading-relaxed">
-                      {msg.isi}
-                    </div>
+                    <div className="flex items-center gap-3 w-full">
+                      {/* Blue plus circle icon next to outgoing responses */}
+                      {!isThem && msg.hasPlusButton && (
+                        <button 
+                          onClick={() => setShowSmartResponse(true)}
+                          className="w-8 h-8 rounded-full bg-[#1E6FD9] text-white flex items-center justify-center shrink-0 shadow-2xs hover:bg-[#185DC0] transition-colors cursor-pointer"
+                          title="Tindakan respons"
+                        >
+                          <Plus className="w-4 h-4 stroke-[2.5]" />
+                        </button>
+                      )}
 
-                    {/* Interactive Linked Task Card (if message references a task) */}
-                    {linkedTask && (
+                      {/* Message Bubble */}
                       <div 
-                        onClick={() => onOpenTask(linkedTask)}
-                        className="mt-2 p-2.5 bg-white/90 rounded-lg border border-[#CBD5E1] hover:border-[#1E6FD9] cursor-pointer shadow-2xs transition-all flex items-center justify-between gap-2"
+                        className={`
+                          relative px-5 py-3.5 rounded-[20px] text-xs sm:text-[13px] leading-relaxed transition-all flex-1
+                          ${isThem 
+                            ? 'bg-[#F3F6FA] text-[#1E293B] rounded-tl-sm' 
+                            : 'bg-[#EDF5FF] text-[#1E40AF] rounded-tl-sm'}
+                        `}
                       >
-                        <div className="min-w-0">
-                          <span className="text-[10px] font-mono font-bold text-[#1E6FD9] bg-[#EAF2FD] px-1.5 py-0.5 rounded">
-                            {linkedTask.id}
-                          </span>
-                          <p className="text-xs font-semibold text-[#0A2540] truncate mt-1">
-                            {linkedTask.nama}
-                          </p>
-                          <span className="text-[10px] text-[#64748B]">
-                            Klik untuk buka detail tugas
-                          </span>
-                        </div>
-                        <span className="text-[10px] font-semibold text-[#1E6FD9] px-2 py-0.5 rounded-full bg-[#1E6FD9]/10 shrink-0">
-                          {linkedTask.status}
+                        <p className="font-normal pr-14 leading-relaxed whitespace-pre-wrap">
+                          {msg.text}
+                        </p>
+                        
+                        {/* Timestamp on bottom right */}
+                        <span className="absolute bottom-2.5 right-4 text-[10px] text-[#94A3B8] font-mono select-none">
+                          {msg.time}
                         </span>
                       </div>
-                    )}
+                    </div>
+                  </div>
+                );
+              })}
 
-                    {/* Timestamp & Double Check Status (WhatsApp signature bottom right) */}
-                    <div className="flex items-center justify-end gap-1 mt-1 text-[10px] text-[#667781] select-none">
-                      <span className="font-mono">{msg.waktu}</span>
-                      {isMe && (
-                        <CheckCheck className="w-3.5 h-3.5 text-[#53BDEB]" />
+              {/* SMART RESPONSE CARD (Vibrant Electric Blue Floating Card) */}
+              <AnimatePresence>
+                {showSmartResponse && (
+                  <motion.div 
+                    initial={{ opacity: 0, y: 15, scale: 0.98 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 10, scale: 0.98 }}
+                    transition={{ type: 'spring', stiffness: 350, damping: 30 }}
+                    className="w-full max-w-xl bg-[#1E6FD9] text-white rounded-[24px] p-6 shadow-xl relative overflow-hidden mt-6"
+                  >
+                    {/* Header */}
+                    <div className="flex items-center justify-between pb-3">
+                      <div className="flex items-center gap-2">
+                        <Sparkles className="w-4 h-4 text-white" />
+                        <h4 className="text-sm sm:text-base font-bold text-white tracking-tight">
+                          Smart Response
+                        </h4>
+                      </div>
+                      <button 
+                        onClick={() => setShowSmartResponse(false)}
+                        className="w-7 h-7 rounded-full bg-white/15 hover:bg-white/25 flex items-center justify-center text-white/90 hover:text-white transition-all cursor-pointer"
+                        aria-label="Tutup Smart Response"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
+
+                    {/* Body Content */}
+                    <div className="py-2 text-xs sm:text-[13px] text-white/95 leading-relaxed font-normal">
+                      {smartIndex === 0 ? (
+                        <>
+                          Hey, <strong className="font-bold text-white">{activeConversation.name}</strong>! Is education residence conveying so so. Suppose shyness say ten behaved morning had. Your request will be processed immediately.
+                        </>
+                      ) : (
+                        SMART_SUGGESTIONS[smartIndex].text
                       )}
                     </div>
 
-                    {/* Quick Reactions Display on bottom of bubble */}
-                    {msg.react && msg.react.length > 0 && (
-                      <div className="absolute -bottom-2.5 left-2 flex items-center gap-1 z-10">
-                        {msg.react.map((r) => (
-                          <button
-                            key={r.e}
-                            onClick={() => handleToggleReaction(msg.id, r.e)}
-                            className="bg-white px-1.5 py-0.2 rounded-full shadow-2xs border border-[#E2E8F0] text-[10px] flex items-center gap-0.5 hover:scale-105 transition-transform"
-                          >
-                            <span>{r.e}</span>
-                            <span className="text-[9px] font-semibold text-[#667781]">{r.n}</span>
-                          </button>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Reaction trigger & Thread replies indicator */}
-                  <div className="flex items-center gap-2 mt-1 px-1">
-                    {/* Hover Reaction button */}
-                    <div className="opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1">
-                      {quickEmojis.slice(0, 3).map((em) => (
-                        <button
-                          key={em}
-                          onClick={() => handleToggleReaction(msg.id, em)}
-                          className="p-1 rounded-full hover:bg-white text-xs transition-transform hover:scale-110"
+                    {/* Footer Navigation & Select Action */}
+                    <div className="pt-4 flex items-center justify-between">
+                      {/* Navigation Pills: < > ... */}
+                      <div className="flex items-center gap-1.5">
+                        <button 
+                          onClick={() => setSmartIndex((prev) => (prev > 0 ? prev - 1 : SMART_SUGGESTIONS.length - 1))}
+                          className="w-7 h-7 rounded-full bg-white/15 hover:bg-white/30 text-white flex items-center justify-center transition-all cursor-pointer active:scale-95"
+                          title="Saran sebelumnya"
                         >
-                          {em}
+                          <ChevronLeft className="w-4 h-4" />
                         </button>
-                      ))}
-                    </div>
+                        <button 
+                          onClick={() => setSmartIndex((prev) => (prev < SMART_SUGGESTIONS.length - 1 ? prev + 1 : 0))}
+                          className="w-7 h-7 rounded-full bg-white/15 hover:bg-white/30 text-white flex items-center justify-center transition-all cursor-pointer active:scale-95"
+                          title="Saran berikutnya"
+                        >
+                          <ChevronRight className="w-4 h-4" />
+                        </button>
+                        <button 
+                          onClick={() => setSmartIndex(0)}
+                          className="w-7 h-7 rounded-full bg-white/15 hover:bg-white/30 text-white flex items-center justify-center transition-all cursor-pointer active:scale-95"
+                          title="Opsi"
+                        >
+                          <MoreHorizontal className="w-4 h-4" />
+                        </button>
+                      </div>
 
-                    {/* Utas / Thread reply trigger */}
-                    {msg.balasan && (
-                      <button
-                        onClick={() => setActiveThreadId(msg.id)}
-                        className="flex items-center gap-1 text-[11px] font-bold text-[#008069] hover:underline cursor-pointer"
+                      {/* Select Action Button */}
+                      <button 
+                        onClick={handleSelectSmartResponse}
+                        className="px-6 py-2 rounded-full bg-white text-[#1E6FD9] font-bold text-xs shadow-md hover:bg-slate-50 active:scale-95 transition-all cursor-pointer"
                       >
-                        <MessageSquare className="w-3 h-3" />
-                        <span>{msg.balasan} balasan di utas</span>
+                        Select
                       </button>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
 
-          <div ref={messagesEndRef} />
-        </div>
+              <div ref={messagesEndRef} />
+            </div>
 
-        {/* Emoji Bar Picker (if toggled) */}
-        <AnimatePresence>
-          {showEmojiPicker && (
-            <motion.div
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: 'auto', opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              className="bg-[#F0F2F5] border-t border-[#E2E8F0] p-3 flex flex-wrap gap-2 z-20 shrink-0"
-            >
-              {['😀', '😃', '😄', '😁', '😅', '😂', '🤣', '😊', '😇', '🙂', '😉', '😍', '🥰', '😘', '😋', '😎', '👍', '👎', '👏', '🙌', '🎉', '🔥', '🚀', '💯', '✨', '❤️', '💡', '✅'].map((em) => (
-                <button
-                  key={em}
-                  onClick={() => { setInputMsg(prev => prev + em); setShowEmojiPicker(false); }}
-                  className="text-lg p-1.5 rounded-lg hover:bg-white hover:scale-125 transition-transform"
+            {/* Bottom Message Input Bar */}
+            <div className="p-4 sm:p-5 bg-white border-t border-[#F1F5F9] shrink-0">
+              <form 
+                onSubmit={(e) => { e.preventDefault(); handleSendMessage(); }}
+                className="flex items-center gap-3"
+              >
+                {/* Plus button inside square icon */}
+                <button 
+                  type="button"
+                  onClick={() => setShowSmartResponse(true)}
+                  className="w-9 h-9 rounded-xl border border-[#CBD5E1] text-[#94A3B8] hover:text-[#1E6FD9] hover:border-[#1E6FD9] flex items-center justify-center transition-colors cursor-pointer shrink-0"
+                  title="Buka Smart Response"
                 >
-                  {em}
+                  <Plus className="w-4.5 h-4.5" />
                 </button>
-              ))}
-            </motion.div>
-          )}
-        </AnimatePresence>
 
-        {/* Attachment Options Drawer (if toggled) */}
-        <AnimatePresence>
-          {showAttachMenu && (
-            <motion.div
-              initial={{ y: 20, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              exit={{ y: 20, opacity: 0 }}
-              className="absolute bottom-16 left-12 bg-white rounded-2xl shadow-xl border border-[#E2E8F0] p-3 z-30 flex flex-col gap-2 w-52"
-            >
-              <button 
-                onClick={() => { alert("Katalog Tugas: Anda dapat menyertakan link tugas dengan mengetik ID tugas seperti 'T-241'."); setShowAttachMenu(false); }}
-                className="flex items-center gap-3 p-2 rounded-xl hover:bg-[#F0F2F5] text-xs font-semibold text-[#111B21] transition-colors"
-              >
-                <div className="w-8 h-8 rounded-full bg-[#EAF2FD] text-[#1E6FD9] flex items-center justify-center">
-                  <Sparkles className="w-4 h-4" />
-                </div>
-                <span>Tautkan Tugas</span>
-              </button>
-              <button 
-                onClick={() => { alert("Lampiran dokumen atau gambar siap diunggah."); setShowAttachMenu(false); }}
-                className="flex items-center gap-3 p-2 rounded-xl hover:bg-[#F0F2F5] text-xs font-semibold text-[#111B21] transition-colors"
-              >
-                <div className="w-8 h-8 rounded-full bg-[#F0FDF4] text-[#16A34A] flex items-center justify-center">
-                  <Paperclip className="w-4 h-4" />
-                </div>
-                <span>Unggah Berkas</span>
-              </button>
-            </motion.div>
-          )}
-        </AnimatePresence>
+                {/* Text Input */}
+                <input 
+                  type="text"
+                  value={inputMsg}
+                  onChange={(e) => setInputMsg(e.target.value)}
+                  placeholder="Start typing your message..."
+                  className="flex-1 bg-transparent py-2.5 text-xs sm:text-sm text-[#0F172A] placeholder-[#94A3B8] focus:outline-none"
+                />
 
-        {/* WhatsApp Message Input Bar */}
-        <form 
-          onSubmit={handleSendMessage}
-          className="h-16 px-4 bg-[#F0F2F5] border-t border-[#E2E8F0] flex items-center gap-2.5 z-20 shrink-0"
-        >
-          {/* Emoji Toggle */}
-          <button
-            type="button"
-            onClick={() => { setShowEmojiPicker(!showEmojiPicker); setShowAttachMenu(false); }}
-            className="p-2 text-[#54656F] hover:text-[#111B21] rounded-full hover:bg-[#E2E8F0] transition-colors cursor-pointer"
-            title="Emoji"
-          >
-            <Smile className="w-5 h-5" />
-          </button>
-
-          {/* Attachment Toggle */}
-          <button
-            type="button"
-            onClick={() => { setShowAttachMenu(!showAttachMenu); setShowEmojiPicker(false); }}
-            className="p-2 text-[#54656F] hover:text-[#111B21] rounded-full hover:bg-[#E2E8F0] transition-colors cursor-pointer"
-            title="Lampirkan"
-          >
-            <Paperclip className="w-5 h-5" />
-          </button>
-
-          {/* Input Box */}
-          <input
-            type="text"
-            value={inputMsg}
-            onChange={(e) => setInputMsg(e.target.value)}
-            placeholder="Ketik pesan..."
-            className="flex-1 bg-white text-sm text-[#111B21] placeholder-[#54656F] rounded-lg px-4 py-2.5 focus:outline-none border-0 shadow-2xs"
-          />
-
-          {/* Send Button or Mic Icon (WhatsApp style) */}
-          {inputMsg.trim() ? (
-            <button
-              type="submit"
-              className="w-10 h-10 rounded-full bg-[#00A884] hover:bg-[#008F6F] text-white flex items-center justify-center shadow-md transition-all active:scale-95 cursor-pointer shrink-0"
-              title="Kirim pesan"
-            >
-              <Send className="w-5 h-5 ml-0.5" />
-            </button>
-          ) : (
-            <button
-              type="button"
-              onClick={() => alert("Pesan suara siap direkam.")}
-              className="w-10 h-10 rounded-full text-[#54656F] hover:bg-[#E2E8F0] flex items-center justify-center transition-colors cursor-pointer shrink-0"
-              title="Pesan suara"
-            >
-              <Mic className="w-5 h-5" />
-            </button>
-          )}
-        </form>
-      </div>
-
-      {/* ========================================================================= */}
-      {/* DRAWER: Info Obrolan / Anggota Saluran (WhatsApp Contact Info style)      */}
-      {/* ========================================================================= */}
-      <AnimatePresence>
-        {showInfoDrawer && (
-          <motion.div
-            initial={{ width: 0, opacity: 0 }}
-            animate={{ width: 340, opacity: 1 }}
-            exit={{ width: 0, opacity: 0 }}
-            className="bg-white border-l border-[#E2E8F0] flex flex-col shrink-0 overflow-hidden shadow-lg h-full z-30"
-          >
-            {/* Header */}
-            <div className="h-16 px-4 bg-[#F0F2F5] border-b border-[#E2E8F0] flex items-center justify-between shrink-0">
-              <span className="text-xs font-bold text-[#111B21]">Info Saluran & Kontak</span>
-              <button
-                onClick={() => setShowInfoDrawer(false)}
-                className="p-1.5 rounded-full text-[#54656F] hover:bg-[#E2E8F0]"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            {/* Body */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-4">
-              {currentChannel ? (
-                <>
-                  <div className="text-center p-4 bg-[#F8FAFC] rounded-2xl border border-[#E2E8F0] space-y-2">
-                    <div 
-                      className="w-16 h-16 rounded-full mx-auto flex items-center justify-center text-white font-bold text-xl shadow-xs"
-                      style={{ backgroundColor: ROOMS_MAP[currentChannel.room || '']?.warna || '#00A884' }}
-                    >
-                      <Hash className="w-8 h-8" />
-                    </div>
-                    <h4 className="text-base font-bold text-[#111B21]">#{currentChannel.nama}</h4>
-                    <p className="text-xs text-[#54656F]">{currentChannel.ringkas}</p>
-                  </div>
-
-                  <div>
-                    <span className="text-xs font-bold text-[#111B21] block mb-2">
-                      Anggota Tim ({currentChannel.anggota.length})
-                    </span>
-                    <div className="space-y-2">
-                      {currentChannel.anggota.map((uid) => {
-                        const member = USERS_MAP[uid];
-                        if (!member) return null;
-                        return (
-                          <div key={uid} className="flex items-center gap-2.5 p-2 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0]/60">
-                            <div 
-                              className="w-8 h-8 rounded-full flex items-center justify-center text-white font-bold text-xs shrink-0"
-                              style={{ backgroundColor: member.warna }}
-                            >
-                              {member.inisial}
-                            </div>
-                            <div className="min-w-0">
-                              <span className="text-xs font-bold text-[#111B21] block truncate">{member.nama}</span>
-                              <span className="text-[10.5px] text-[#64748B] block truncate">{member.peran} &bull; {member.email}</span>
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                </>
-              ) : currentDM && dmUser ? (
-                <div className="text-center p-4 bg-[#F8FAFC] rounded-2xl border border-[#E2E8F0] space-y-3">
-                  <div 
-                    className="w-16 h-16 rounded-full mx-auto flex items-center justify-center text-white font-bold text-xl shadow-xs"
-                    style={{ backgroundColor: dmUser.warna }}
+                {/* Microphone / Send icon */}
+                {inputMsg.trim() ? (
+                  <button 
+                    type="submit"
+                    className="w-9 h-9 rounded-xl bg-[#1E6FD9] text-white flex items-center justify-center hover:bg-[#185DC0] transition-colors cursor-pointer shrink-0 shadow-xs"
+                    title="Kirim pesan"
                   >
-                    {dmUser.inisial}
-                  </div>
-                  <h4 className="text-base font-bold text-[#111B21]">{dmUser.nama}</h4>
-                  <span className="inline-block px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[#EAF2FD] text-[#1E6FD9]">
-                    {dmUser.peran}
-                  </span>
-                  <p className="text-xs text-[#54656F]">{dmUser.email}</p>
-                </div>
-              ) : null}
+                    <Send className="w-4 h-4" />
+                  </button>
+                ) : (
+                  <button 
+                    type="button"
+                    onClick={() => alert("Fitur dikte suara siap digunakan.")}
+                    className="p-2 text-[#94A3B8] hover:text-[#1E6FD9] transition-colors cursor-pointer shrink-0"
+                    title="Pesan suara"
+                  >
+                    <Mic className="w-5 h-5 stroke-[1.75]" />
+                  </button>
+                )}
+              </form>
             </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+          </div>
 
-      {/* ========================================================================= */}
-      {/* DRAWER: Utas Percakapan (Thread Drawer)                                  */}
-      {/* ========================================================================= */}
-      <AnimatePresence>
-        {activeThreadId && (
-          <motion.div
-            initial={{ width: 0, opacity: 0 }}
-            animate={{ width: 340, opacity: 1 }}
-            exit={{ width: 0, opacity: 0 }}
-            className="bg-white border-l border-[#E2E8F0] flex flex-col shrink-0 overflow-hidden shadow-lg h-full z-30"
-          >
-            <div className="h-16 px-4 bg-[#F0F2F5] border-b border-[#E2E8F0] flex items-center justify-between shrink-0">
-              <span className="text-xs font-bold text-[#111B21]">Utas Balasan</span>
-              <button
-                onClick={() => setActiveThreadId(null)}
-                className="p-1.5 rounded-full text-[#54656F] hover:bg-[#E2E8F0]"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-[#F8FAFC]">
-              {threadReplies.map((r, idx) => {
-                const user = USERS_MAP[r.user] || CURRENT_USER;
-                return (
-                  <div key={idx} className="p-3 bg-white rounded-xl border border-[#E2E8F0] shadow-2xs space-y-1">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold text-[#111B21]">{user.nama}</span>
-                      <span className="text-[10px] text-[#667781] font-mono">{r.waktu}</span>
-                    </div>
-                    <p className="text-xs text-[#3C5A78] leading-relaxed">{r.isi}</p>
-                  </div>
-                );
-              })}
-            </div>
-
-            <form onSubmit={handleSendThreadReply} className="p-3 bg-[#F0F2F5] border-t border-[#E2E8F0] flex gap-2">
-              <input
-                type="text"
-                value={threadInput}
-                onChange={(e) => setThreadInput(e.target.value)}
-                placeholder="Balas di utas..."
-                className="flex-1 px-3 py-2 text-xs bg-white rounded-lg border border-[#E2E8F0] focus:outline-none"
-              />
-              <button
-                type="submit"
-                className="p-2 rounded-lg bg-[#00A884] text-white hover:bg-[#008F6F]"
-              >
-                <Send className="w-4 h-4" />
-              </button>
-            </form>
-          </motion.div>
-        )}
-      </AnimatePresence>
+        </div>
+      </div>
     </div>
   );
 };

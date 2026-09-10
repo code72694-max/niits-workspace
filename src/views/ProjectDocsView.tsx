@@ -307,81 +307,37 @@ export const ProjectDocsView: React.FC<ProjectDocsViewProps> = ({
 
   return (
     <div className="space-y-6">
-      {/* Top Header & Breadcrumbs */}
-      <div className="bg-white border border-[#E2EAF3] rounded-3xl p-6 sm:p-8 shadow-xs">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div>
-            {/* Breadcrumb Navigation */}
-            <div className="flex items-center gap-2 text-xs text-[#64748B] mb-2">
-              <span className="font-medium text-[#0F172A]">NIITS Studio</span>
-              <span>/</span>
-              <button 
-                onClick={() => onNavigate('room', { room: room.id })}
-                className="font-medium hover:text-[#1E6FD9] flex items-center gap-1.5"
-              >
-                <span 
-                  className="w-2 h-2 rounded-full inline-block" 
-                  style={{ backgroundColor: room.warna }}
-                />
-                <span>{room.kode} {room.nama}</span>
-              </button>
-              <span>/</span>
-              <span className="font-semibold text-[#1E6FD9]">Dokumen Project</span>
-            </div>
-
-            <div className="flex items-center gap-3">
-              <h2 className="text-2xl font-bold text-[#0F172A] tracking-tight">
-                Dokumen Project
-              </h2>
-              <span 
-                className="px-2.5 py-0.5 rounded-full text-xs font-bold text-white font-mono shadow-xs"
-                style={{ backgroundColor: room.warna }}
-              >
-                {room.kode}
-              </span>
-            </div>
-            <p className="text-xs sm:text-sm text-[#64748B] mt-1 max-w-2xl">
-              Pustaka lembar spesifikasi, token desain, aset vector, dan catatan arsitektur untuk {room.nama}.
-            </p>
-          </div>
-
-          {/* Action Buttons */}
-          <div className="flex items-center gap-2 self-start sm:self-auto">
-            <button
-              onClick={() => setIsCreatingFolder(true)}
-              className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold bg-[#F1F5F9] text-[#0F172A] hover:bg-[#E2E8F0] border border-[#CBD5E1] transition-all cursor-pointer"
-            >
-              <Plus className="w-3.5 h-3.5" />
-              <span>Folder Baru</span>
-            </button>
-            <button
-              onClick={() => setIsUploadModalOpen(true)}
-              className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold bg-[#1E6FD9] text-white hover:bg-[#1557B0] shadow-xs transition-all cursor-pointer"
-            >
-              <UploadCloud className="w-3.5 h-3.5" />
-              <span>Upload Dokumen</span>
-            </button>
-          </div>
+      {/* Top Search & Actions Bar */}
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pb-2">
+        <div className="relative flex-1 max-w-md">
+          <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-[#94A3B8]" />
+          <input
+            type="text"
+            placeholder="Cari folder atau dokumen..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-white border border-[#E2E8F0] hover:border-[#CBD5E1] text-xs text-[#0F172A] placeholder-[#94A3B8] focus:outline-none focus:ring-2 focus:ring-[#1E6FD9]/15 focus:border-[#1E6FD9] transition-all shadow-2xs"
+          />
         </div>
 
-        {/* Search & Navigation Filter Bar */}
-        <div className="mt-6 pt-6 border-t border-[#F1F5F9] flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="relative w-full sm:w-80">
-            <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-[#94A3B8]" />
-            <input
-              type="text"
-              placeholder="Cari folder atau dokumen..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] text-xs text-[#0F172A] placeholder-[#94A3B8] focus:outline-none focus:ring-2 focus:ring-[#1E6FD9]/20 focus:border-[#1E6FD9]"
-            />
-          </div>
-
-          <div className="flex items-center gap-2 self-end sm:self-auto">
-            <span className="text-xs text-[#64748B]">
-              Total <strong>{folders.length} Folders</strong> &bull; <strong>{folders.reduce((acc, f) => acc + f.fileCount, 0)} Files</strong>
-            </span>
-          </div>
+        <div className="flex items-center gap-3 self-end sm:self-auto shrink-0">
+          <span className="text-xs text-[#64748B] hidden sm:inline-block mr-1">
+            Total <strong className="text-[#0F172A]">{folders.length} Folders</strong> &bull; <strong className="text-[#0F172A]">{folders.reduce((acc, f) => acc + f.fileCount, 0)} Files</strong>
+          </span>
+          <button
+            onClick={() => setIsCreatingFolder(true)}
+            className="flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl text-xs font-semibold bg-white text-[#0F172A] hover:bg-slate-50 border border-[#CBD5E1] transition-all cursor-pointer shadow-2xs"
+          >
+            <Plus className="w-3.5 h-3.5" />
+            <span>Folder Baru</span>
+          </button>
+          <button
+            onClick={() => setIsUploadModalOpen(true)}
+            className="btn-3d-primary flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-xs font-semibold text-white shadow-2xs hover:brightness-105 active:scale-95 transition-all cursor-pointer"
+          >
+            <UploadCloud className="w-3.5 h-3.5 text-white" />
+            <span>Upload Dokumen</span>
+          </button>
         </div>
       </div>
 

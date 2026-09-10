@@ -32,7 +32,8 @@ import {
   Terminal,
   Activity,
   Check,
-  ChevronDown
+  ChevronDown,
+  MessageSquare
 } from 'lucide-react';
 import { Room, RoleKey } from '../types';
 import { CURRENT_USER, ROLES_CONFIG } from '../data/mockData';
@@ -444,31 +445,27 @@ export const Sidebar: React.FC<SidebarProps> = ({
               </div>
             ) : (
               <button
-                onClick={(e) => handleItemClick('chat', e, true, () => handleNavigate('chat'))}
-                onMouseEnter={(e) => handleMouseEnterItem('chat', e)}
-                onMouseLeave={handleMouseLeaveItem}
+                onClick={() => handleNavigate('chat')}
                 className={`relative group w-10 h-10 rounded-full flex items-center justify-center transition-all cursor-pointer shadow-2xs hover:shadow-xs active:scale-95 ${
-                  currentPage === 'chat' || activeFlyout === 'chat'
-                    ? 'bg-[#00A884] text-white shadow-sm ring-2 ring-[#00A884]/40 font-semibold'
-                    : 'bg-white border border-[#D5E0ED] text-[#4A5D70] hover:text-[#00A884] hover:border-[#00A884]/60 hover:bg-white'
+                  currentPage === 'chat'
+                    ? 'btn-3d-primary text-white shadow-sm ring-2 ring-[#1E6FD9]/30 font-semibold'
+                    : 'bg-white border border-[#D5E0ED] text-[#4A5D70] hover:text-[#1E6FD9] hover:border-[#1E6FD9]/60 hover:bg-slate-50'
                 }`}
                 title="Chat & Saluran Tim"
               >
-                <Send className="w-4.5 h-4.5 shrink-0" />
+                <MessageSquare className="w-4.5 h-4.5 shrink-0" />
 
                 {/* Badge for unread chats */}
                 {unreadChatCount > 0 && (
-                  <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-[16px] px-1 rounded-full bg-[#C4562B] text-white text-[8px] font-bold flex items-center justify-center ring-2 ring-white shadow-2xs">
+                  <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-[16px] px-1 rounded-full bg-[#1E6FD9] text-white text-[8px] font-bold flex items-center justify-center ring-2 ring-white shadow-2xs">
                     {unreadChatCount}
                   </span>
                 )}
 
-                {/* Hover Tooltip when NO flyout is open */}
-                {activeFlyout !== 'chat' && (
-                  <span className="absolute left-13 px-2.5 py-1 rounded-lg bg-[#0A2540] text-white text-[11px] font-medium whitespace-nowrap shadow-lg opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity z-50">
-                    Chat & Saluran Tim
-                  </span>
-                )}
+                {/* Clean Hover Tooltip */}
+                <span className="absolute left-13 px-2.5 py-1 rounded-lg bg-[#0A2540] text-white text-[11px] font-medium whitespace-nowrap shadow-lg opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity z-50">
+                  Chat & Saluran Tim
+                </span>
               </button>
             )}
           </div>
@@ -876,75 +873,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 </div>
               )}
 
-              {/* ------------------------------------------------------------- */}
-              {/* 9. CHAT & SALURAN TIM SUBMENU                                 */}
-              {/* ------------------------------------------------------------- */}
-              {activeFlyout === 'chat' && (
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between pb-2 border-b border-[#EAEFF5]">
-                    <div className="flex items-center gap-2">
-                      <Send className="w-4 h-4 text-[#00A884]" />
-                      <span className="text-xs font-bold text-[#0A2540]">Chat & Saluran Tim</span>
-                    </div>
-                    <button 
-                      onClick={closeFlyout} 
-                      className="p-1 rounded-lg text-[#94A3B8] hover:text-[#0A2540] hover:bg-[#F4F8FD]"
-                    >
-                      <X className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
-
-                  <div className="space-y-1">
-                    <div className="text-[10px] font-bold uppercase tracking-wider text-[#5B7288] px-1 pt-1">
-                      Saluran Tim
-                    </div>
-                    <button
-                      onClick={() => handleNavigate('chat', { chatId: 'c-agro' })}
-                      className="w-full flex items-center justify-between p-2 rounded-xl text-left text-xs hover:bg-[#F4F8FD] text-[#0A2540] transition-colors"
-                    >
-                      <div className="flex items-center gap-2">
-                        <span className="w-2 h-2 rounded-full bg-[#1E6FD9]" />
-                        <span className="font-semibold"># agro-sprint</span>
-                      </div>
-                      <span className="text-[10px] text-[#5B7288]">Tim Inti</span>
-                    </button>
-
-                    <button
-                      onClick={() => handleNavigate('chat', { chatId: 'c-qa' })}
-                      className="w-full flex items-center justify-between p-2 rounded-xl text-left text-xs hover:bg-[#F4F8FD] text-[#0A2540] transition-colors"
-                    >
-                      <div className="flex items-center gap-2">
-                        <span className="w-2 h-2 rounded-full bg-[#C4562B]" />
-                        <span className="font-semibold"># qa-security</span>
-                      </div>
-                      <span className="text-[10px] text-[#5B7288]">Bug & Vuln</span>
-                    </button>
-
-                    <div className="text-[10px] font-bold uppercase tracking-wider text-[#5B7288] px-1 pt-1">
-                      Chat Pribadi
-                    </div>
-                    <button
-                      onClick={() => handleNavigate('chat', { chatId: 'dm-u3' })}
-                      className="w-full flex items-center justify-between p-2 rounded-xl text-left text-xs hover:bg-[#F4F8FD] text-[#0A2540] transition-colors"
-                    >
-                      <div className="flex items-center gap-2">
-                        <span className="w-2 h-2 rounded-full bg-[#25D366]" />
-                        <span className="font-semibold">Bambang Wijaya (BE)</span>
-                      </div>
-                      <span className="text-[10px] text-[#00A884] font-bold">Baru</span>
-                    </button>
-
-                    <button
-                      onClick={() => handleNavigate('chat')}
-                      className="w-full py-2 mt-2 rounded-xl bg-[#0A2540] text-white text-center text-xs font-semibold hover:bg-[#00A884] transition-colors flex items-center justify-center gap-1.5 shadow-xs"
-                    >
-                      <Send className="w-3.5 h-3.5" />
-                      <span>Buka Halaman Chat & Saluran</span>
-                    </button>
-                  </div>
-                </div>
-              )}
-
             </motion.div>
           </>
         )}
@@ -1080,15 +1008,15 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 <button
                   onClick={() => handleNavigate('chat')}
                   className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold ${
-                    currentPage === 'chat' ? 'bg-[#00A884] text-white shadow-xs' : 'text-[#4A5D70] hover:bg-white'
+                    currentPage === 'chat' ? 'bg-[#1E6FD9] text-white shadow-xs' : 'text-[#4A5D70] hover:bg-white'
                   }`}
                 >
                   <div className="flex items-center gap-3">
-                    <Send className="w-4 h-4 text-[#00A884]" />
+                    <MessageSquare className={`w-4 h-4 ${currentPage === 'chat' ? 'text-white' : 'text-[#1E6FD9]'}`} />
                     <span>Chat & Saluran Tim</span>
                   </div>
                   {unreadChatCount > 0 && (
-                    <span className="px-2 py-0.5 rounded-full bg-[#C4562B] text-white text-[10px] font-bold">
+                    <span className="px-2 py-0.5 rounded-full bg-[#1E6FD9] text-white text-[10px] font-bold">
                       {unreadChatCount}
                     </span>
                   )}
