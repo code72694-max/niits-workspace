@@ -19,7 +19,8 @@ import {
   MessageSquare,
   Sparkles,
   ChevronRight,
-  User as UserIcon
+  User as UserIcon,
+  GraduationCap
 } from 'lucide-react';
 import { Task, Room, DocItem, RoleKey } from '../types';
 import { 
@@ -217,6 +218,15 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
         icon: Users, 
         key: 'M',
         badge: 'Tim'
+      },
+      { 
+        id: 'action-learning', 
+        label: 'Learning Hub & LMS Tim', 
+        sub: 'Silabus pelatihan teknik, sertifikasi, matriks skill tim, dan progres upgrade kompetensi', 
+        action: () => { onClose(); onNavigate('learning'); }, 
+        icon: GraduationCap, 
+        key: 'L',
+        badge: 'LMS'
       }
     ];
 

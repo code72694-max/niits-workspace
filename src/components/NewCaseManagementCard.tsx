@@ -23,6 +23,7 @@ import {
   Search,
   Bell,
   X,
+  GraduationCap,
   Edit2,
   Trash2,
   Tag,
@@ -611,6 +612,16 @@ export const NewCaseManagementCard: React.FC<NewCaseManagementCardProps> = ({
                 </button>
               )}
             </div>
+
+            {/* Learning Hub / LMS Button (Right of Search Bar) */}
+            <button
+              onClick={() => onNavigate && onNavigate('learning')}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-[#EEF4FB] text-[#1E6FD9] border border-[#D0E2FB] hover:bg-[#1E6FD9] hover:text-white transition-all shadow-2xs active:scale-95 cursor-pointer"
+              title="Buka Learning Hub & LMS Upgrade Skill Tim"
+            >
+              <GraduationCap className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Learning Hub</span>
+            </button>
           </div>
         </div>
 

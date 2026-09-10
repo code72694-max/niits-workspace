@@ -44,6 +44,7 @@ import { MembersView } from './views/MembersView';
 import { ProfileView } from './views/ProfileView';
 import { ProjectWorkspaceView, ProjectSubTab } from './views/ProjectWorkspaceView';
 import { ProjectsListView } from './views/ProjectsListView';
+import { LearningView } from './views/LearningView';
 
 interface Toast {
   id: string;
@@ -381,6 +382,15 @@ export default function App() {
             onShowToast={showToast}
           />
         );
+      case 'learning':
+      case 'lms':
+      case 'kursus':
+        return (
+          <LearningView
+            onBackToWorkspace={() => handleNavigate('dash')}
+            onShowToast={showToast}
+          />
+        );
       case 'profile':
       case 'profil':
       case 'akun':
@@ -434,6 +444,15 @@ export default function App() {
               <ArrowLeft className="w-4 h-4 text-[#0A2540]" />
               <span>Kembali</span>
             </button>
+          ) : (currentPage === 'learning' || currentPage === 'lms') ? (
+            <button
+              onClick={() => handleNavigate('dash')}
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-[#F4F8FD] text-[#0A2540] border border-[#D5E0ED] active:scale-95 cursor-pointer hover:bg-[#EAEFF5] text-xs font-semibold"
+              title="Kembali ke Workspace Utama"
+            >
+              <ArrowLeft className="w-4 h-4 text-[#1E6FD9]" />
+              <span className="text-[#0A2540]">Workspace</span>
+            </button>
           ) : (
             <>
               <button
@@ -453,7 +472,7 @@ export default function App() {
           )}
         </div>
 
-        {/* Mobile Quick Pills: Dashboard, Articles, Team */}
+        {/* Mobile Quick Pills: Dashboard, Articles, Team, LMS */}
         <div className="flex items-center gap-1 bg-[#EEF4FB] p-1 rounded-full border border-[#D5E0ED]">
           <button
             onClick={() => handleNavigate('dash')}
@@ -479,36 +498,46 @@ export default function App() {
           >
             Team
           </button>
+          <button
+            onClick={() => handleNavigate('learning')}
+            className={`px-2.5 py-1 rounded-full text-[11px] font-bold transition-all ${
+              currentPage === 'learning' || currentPage === 'lms' ? 'bg-black text-white shadow-2xs' : 'text-[#4A5D70]'
+            }`}
+          >
+            LMS
+          </button>
         </div>
       </div>
 
-      {/* Body container: Full height, sidebar at left and workspace on right */}
+      {/* Body container: Full height, sidebar at left (hidden in learning view) and workspace on right */}
       <div className="flex-1 w-full min-h-0 overflow-hidden flex flex-col">
         <div className="flex-1 flex flex-row h-full min-w-0 w-full max-w-[1720px] mx-auto px-4 sm:px-5 lg:px-6 pt-5 sm:pt-6 pb-4 sm:pb-5 gap-4 sm:gap-5 lg:gap-6">
-          {/* Sidebar Navigation: Floating circular buttons at left */}
-          <Sidebar
-            currentPage={currentPage}
-            currentRoomId={currentRoomId}
-            currentRoleKey={currentRoleKey}
-            rooms={rooms}
-            onNavigate={handleNavigate}
-            onOpenNewTask={() => setIsNewTaskModalOpen(true)}
-            isMobileOpen={isMobileSidebarOpen}
-            onCloseMobile={() => setIsMobileSidebarOpen(false)}
-            isArticleDetail={isArticleDetail}
-            onBackFromArticleDetail={handleBackFromArticleDetail}
-            onPrevArticle={handlePrevArticle}
-            onNextArticle={handleNextArticle}
-            hasPrevArticle={hasPrevArticle}
-            hasNextArticle={hasNextArticle}
-            prevArticleTitle={prevArticleTitle}
-            nextArticleTitle={nextArticleTitle}
-            isProjectDetail={isProjectDetail}
-            onBackFromProjectDetail={handleBackFromProjectDetail}
-          />
+          {/* Sidebar Navigation: Floating circular buttons at left (hidden in learning mode) */}
+          {currentPage !== 'learning' && currentPage !== 'lms' && (
+            <Sidebar
+              currentPage={currentPage}
+              currentRoomId={currentRoomId}
+              currentRoleKey={currentRoleKey}
+              rooms={rooms}
+              onNavigate={handleNavigate}
+              onOpenNewTask={() => setIsNewTaskModalOpen(true)}
+              isMobileOpen={isMobileSidebarOpen}
+              onCloseMobile={() => setIsMobileSidebarOpen(false)}
+              isArticleDetail={isArticleDetail}
+              onBackFromArticleDetail={handleBackFromArticleDetail}
+              onPrevArticle={handlePrevArticle}
+              onNextArticle={handleNextArticle}
+              hasPrevArticle={hasPrevArticle}
+              hasNextArticle={hasNextArticle}
+              prevArticleTitle={prevArticleTitle}
+              nextArticleTitle={nextArticleTitle}
+              isProjectDetail={isProjectDetail}
+              onBackFromProjectDetail={handleBackFromProjectDetail}
+            />
+          )}
 
           {/* Main Workspace Layout */}
-          <div className={`flex-1 flex flex-col h-full min-w-0 ${(currentPage === 'dash' || currentPage === 'chat' || currentPage === 'artikel' || currentPage === 'articles') ? 'overflow-visible' : 'overflow-y-auto overflow-x-hidden'}`}>
+          <div className={`flex-1 flex flex-col h-full min-w-0 ${(currentPage === 'dash' || currentPage === 'chat' || currentPage === 'artikel' || currentPage === 'articles' || currentPage === 'learning' || currentPage === 'lms') ? 'overflow-visible' : 'overflow-y-auto overflow-x-hidden'}`}>
             {/* View Content Area with Motion Fade Transition */}
             <main className="flex-1 w-full flex flex-col min-h-0">
               <AnimatePresence mode="wait">

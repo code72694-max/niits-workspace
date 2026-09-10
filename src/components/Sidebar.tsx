@@ -33,7 +33,8 @@ import {
   Activity,
   Check,
   ChevronDown,
-  MessageSquare
+  MessageSquare,
+  GraduationCap
 } from 'lucide-react';
 import { Room, RoleKey } from '../types';
 import { CURRENT_USER, ROLES_CONFIG } from '../data/mockData';
@@ -1002,6 +1003,17 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 >
                   <User className="w-4 h-4" />
                   <span>Profil Saya</span>
+                </button>
+
+                {/* Learning & LMS Hub Direct Link */}
+                <button
+                  onClick={() => handleNavigate('learning')}
+                  className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold ${
+                    currentPage === 'learning' || currentPage === 'lms' ? 'bg-[#1E6FD9] text-white shadow-xs' : 'text-[#4A5D70] hover:bg-white'
+                  }`}
+                >
+                  <GraduationCap className="w-4 h-4" />
+                  <span>Learning Hub & LMS Tim</span>
                 </button>
 
                 {/* Chat & Saluran Tim Direct Link */}
